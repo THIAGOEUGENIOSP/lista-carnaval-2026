@@ -19,23 +19,22 @@ export function capitalize(s) {
 export function normalizeItemName(name) {
   if (!name) return "";
   
-  // Remove acentos
+  // Remove acentos primeiro
   let normalized = name
     .toLowerCase()
     .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
   
-  // Remove plurais comuns em português
+  // Remove plurais comuns em português (ordem importa: padrões maiores primeiro)
   normalized = normalized
-    .replace(/s$/, "") // Remove 's' final (plural)
-    .replace(/ões$/, "ão") // ões -> ão
-    .replace(/ães$/, "ão") // ães -> ão
+    .replace(/ões$/, "ao") // ões -> ão (mas depois remove o til)
+    .replace(/aes$/, "ao") // ães -> ão
     .replace(/ais$/, "al") // ais -> al
-    .replace(/éis$/, "el") // éis -> el
-    .replace(/eis$/, "el") // eis -> el
+    .replace(/eis$/, "el") // éis -> el
     .replace(/ois$/, "ol") // ois -> ol
-    .replace(/is$/, "il"); // is -> il
+    .replace(/is$/, "il")  // is -> il
+    .replace(/s$/, "");    // Remove 's' final por último
   
   return normalized;
 }
