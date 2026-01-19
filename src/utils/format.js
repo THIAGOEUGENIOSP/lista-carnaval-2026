@@ -19,12 +19,14 @@ export function capitalize(s) {
 export function normalizeItemName(name) {
   if (!name) return "";
   
-  // Remove acentos primeiro
+  // Remove acentos e parênteses com conteúdo
   let normalized = name
     .toLowerCase()
     .trim()
+    .replace(/\s*\([^)]*\)/g, "") // Remove tudo entre parênteses
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
   
   // Remove plurais comuns em português (ordem importa: padrões maiores primeiro)
   normalized = normalized
