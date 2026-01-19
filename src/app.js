@@ -57,7 +57,7 @@ const state = {
 
   filterStatus: "ALL",
   searchText: "",
-  sortKey: "created_desc",
+  sortKey: "name_asc",
 
   charts: null,
   delegatedBound: false,
