@@ -418,3 +418,60 @@ tr.row-bought .badge{
  .table-wrap{ display:none !important; }
  .mobile-list{ display:grid !important; }
 }
+
+/* ===== Ajuste fino: Preço e Quantidade do mesmo tamanho ===== */
+/* pill base com altura fixa */
+.pill{
+  height: 56px;              /* força mesma altura */
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+ }
+ /* quantidade não pode crescer mais que o preço */
+ .pill.qtybox{
+  justify-content: space-between;
+ }
+ /* botões + / - menores */
+ .qtybtn{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 18px;
+ }
+ /* número central alinhado */
+ .qtynum{
+  min-width: 32px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+ }
+
+ @media (max-width: 768px){
+  /* campos Preço e Quantidade menores */
+  .pill{
+    height: 42px;          /* ↓ era 58 */
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+  /* valor do preço */
+  .pill .pvalue{
+    font-size: 14px;       /* ↓ era 15/16 */
+  }
+  /* botões + / - menores */
+  .qtybtn{
+    width: 32px;           /* ↓ era 40 */
+    height: 32px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+  /* número central */
+  .qtynum{
+    font-size: 16px;       /* ↓ era 18 */
+    min-width: 28px;
+  }
+  /* rótulos "Preço (unit)" / "Quantidade" mais discretos */
+  .mfield .flabel{
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+ }
