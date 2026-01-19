@@ -205,7 +205,6 @@ function renderNameGate() {
     <div class="container">
       <div class="card section">
         <h1>Lista de Compras - Carnaval 2026</h1>
-        <div class="muted" style="margin-top:6px">Aplicação pública. Informe seu nome para colaborar.</div>
 
         <div class="hr"></div>
 
@@ -213,10 +212,6 @@ function renderNameGate() {
           <input class="input" name="nome" placeholder="Seu nome (ex: João)" required />
           <button class="btn primary" type="submit">Entrar</button>
         </form>
-
-        <div class="muted" style="font-size:12px;margin-top:12px">
-          O nome fica salvo apenas no seu navegador (localStorage).
-        </div>
       </div>
     </div>
   `;
