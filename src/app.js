@@ -1,7 +1,7 @@
 // src/app.js
 import { sb } from "./config/supabase.js";
 import { getTheme, setTheme, qs, qsa } from "./utils/ui.js";
-import { num } from "./utils/format.js";
+import { num, findDuplicateItem } from "./utils/format.js";
 import { addMonths, monthKey, periodName } from "./utils/period.js";
 import { renderCollaboratorsSummary } from "./components/collaborators.js";
 
@@ -410,6 +410,16 @@ function bindPerRenderInputs() {
           state.items = state.items.map((x) => (x.id === id ? updated : x));
           toast.show({ title: "Salvo", message: "Item atualizado." });
         } else {
+          // Verifica se existe item duplicado (mesmo nome ignorando acentos e plurais)
+          const duplicate = findDuplicateItem(payload.nome, state.items);
+          if (duplicate) {
+            toast.show({
+              title: "Item Duplicado",
+              message: `"${duplicate.nome}" já existe na lista. Deseja aumentar a quantidade?`,
+            });
+            return;
+          }
+
           const created = normalizeItem(
             await addItem({
               ...payload,
