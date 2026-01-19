@@ -205,6 +205,7 @@ function renderNameGate() {
     <div class="container">
       <div class="card section">
         <h1>Lista de Compras - Carnaval 2026</h1>
+        <div class="muted" style="margin-top:6px">Informe seu nome para colaborar.</div>
 
         <div class="hr"></div>
 
