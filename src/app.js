@@ -322,24 +322,27 @@ function renderApp() {
     state.charts = buildCharts();
   }
 
-  (async () => {
-    try {
-      const priceBuckets = computePriceBuckets(state.items);
-      const statusCounts = computeStatusCounts(state.items);
-      const monthlySeries = await computeMonthlySeries();
-      updateCharts({
-        charts: state.charts,
-        priceBuckets,
-        monthlySeries,
-        statusCounts,
-      });
-    } catch (err) {
-      toast.show({
-        title: "Charts",
-        message: err.message || "Falha ao montar gráficos",
-      });
-    }
-  })();
+  // Se os gráficos foram criados com sucesso
+  if (state.charts) {
+    (async () => {
+      try {
+        const priceBuckets = computePriceBuckets(state.items);
+        const statusCounts = computeStatusCounts(state.items);
+        const monthlySeries = await computeMonthlySeries();
+        updateCharts({
+          charts: state.charts,
+          priceBuckets,
+          monthlySeries,
+          statusCounts,
+        });
+      } catch (err) {
+        toast.show({
+          title: "Charts",
+          message: err.message || "Falha ao montar gráficos",
+        });
+      }
+    })();
+  }
 
   // Delegation só precisa ser ligado 1 vez
   if (!state.delegatedBound) {
