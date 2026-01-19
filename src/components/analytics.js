@@ -1,0 +1,106 @@
+// src/components/analytics.js
+export function renderAnalytics() {
+  return `
+  <div class="card section" style="margin-top:12px">
+    <div class="row space-between">
+      <div>
+        <h2>Analytics</h2>
+        <div class="muted" style="font-size:12px;margin-top:4px">
+          Faixas de preço + evolução mensal + pendente vs comprado
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-stack" style="margin-top:12px">
+      <div class="card section">
+        <h3>Distribuição de preços (unitário)</h3>
+        <div class="muted" style="font-size:12px;margin-top:4px">Até 10 • 10–50 • Acima 50</div>
+        <div class="chart-box">
+          <canvas id="chartPrice"></canvas>
+        </div>
+      </div>
+
+      <div class="card section">
+        <h3>Evolução mensal de gastos</h3>
+        <div class="muted" style="font-size:12px;margin-top:4px">Total (R$) por período</div>
+        <div class="chart-box">
+          <canvas id="chartMonthly"></canvas>
+        </div>
+      </div>
+
+      <div class="card section">
+        <h3>Pendentes vs Comprados</h3>
+        <div class="muted" style="font-size:12px;margin-top:4px">Por quantidade de itens</div>
+        <div class="chart-box">
+          <canvas id="chartStatus"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+export function buildCharts() {
+  const ctxPrice = document.getElementById("chartPrice");
+  const ctxMonthly = document.getElementById("chartMonthly");
+  const ctxStatus = document.getElementById("chartStatus");
+
+  const priceChart = new Chart(ctxPrice, {
+    type: "bar",
+    data: {
+      labels: ["Até R$ 10", "R$ 10–50", "Acima de R$ 50"],
+      datasets: [{ label: "Itens", data: [0, 0, 0] }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  const monthlyChart = new Chart(ctxMonthly, {
+    type: "line",
+    data: { labels: [], datasets: [{ label: "Total (R$)", data: [] }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  const statusChart = new Chart(ctxStatus, {
+    type: "doughnut",
+    data: { labels: ["Pendentes", "Comprados"], datasets: [{ data: [0, 0] }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
+
+  return { priceChart, monthlyChart, statusChart };
+}
+
+export function updateCharts({
+  charts,
+  priceBuckets,
+  monthlySeries,
+  statusCounts,
+}) {
+  charts.priceChart.data.datasets[0].data = [
+    priceBuckets.at10,
+    priceBuckets.between10and50,
+    priceBuckets.above50,
+  ];
+  charts.priceChart.update();
+
+  charts.monthlyChart.data.labels = monthlySeries.labels;
+  charts.monthlyChart.data.datasets[0].data = monthlySeries.values;
+  charts.monthlyChart.update();
+
+  charts.statusChart.data.datasets[0].data = [
+    statusCounts.pending,
+    statusCounts.bought,
+  ];
+  charts.statusChart.update();
+}
