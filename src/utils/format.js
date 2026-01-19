@@ -45,13 +45,18 @@ export function normalizeItemName(name) {
  */
 export function findDuplicateItem(newItemName, existingItems) {
   const normalizedNew = normalizeItemName(newItemName);
+  console.log("Buscando duplicatas para:", newItemName, "normalizado:", normalizedNew);
+  console.log("Itens na lista:", existingItems);
   
   for (const item of existingItems) {
     const normalizedExisting = normalizeItemName(item.nome);
+    console.log(`Comparando '${normalizedExisting}' com '${normalizedNew}'`, normalizedNew === normalizedExisting);
     if (normalizedNew === normalizedExisting) {
+      console.log("DUPLICATA ENCONTRADA:", item.nome);
       return item;
     }
   }
   
+  console.log("Nenhuma duplicata encontrada");
   return null;
 }
