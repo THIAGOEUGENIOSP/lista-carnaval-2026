@@ -348,6 +348,9 @@ tr.row-bought td{
 }
 
 tr.row-summary td{
+  border-top: 1px dashed var(--border);
+  font-weight: 700;
+}
 
 .qty-sub{
   display: block;
@@ -355,12 +358,6 @@ tr.row-summary td{
   color: var(--muted);
   margin-top: 2px;
 }
-tr.row-summary td{
-  border-top: 1px dashed var(--border);
-  font-weight: 700;
-}
-
-
 /* mantém botões/ícones legíveis mesmo riscado */
 tr.row-bought .btn,
 tr.row-bought .icon-btn,
