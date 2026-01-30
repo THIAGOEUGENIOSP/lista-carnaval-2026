@@ -61,16 +61,34 @@ export function renderItemListControls(state) {
 export function renderItemTable(items, opts = {}) {
  const title = opts.title || "Lista de Compras";
  const countLabel = opts.countLabel || "item(ns)";
- const totalQty = items.reduce((a, it) => a + Number(it.quantidade || 0), 0);
+ const totalQtyUn = items.reduce((a, it) => {
+   const unit = String(it.unidade || "UN").toUpperCase();
+   return a + (unit === "KG" ? 0 : Number(it.quantidade || 0));
+ }, 0);
+ const totalQtyKg = items.reduce((a, it) => {
+   const unit = String(it.unidade || "UN").toUpperCase();
+   return a + (unit === "KG" ? Number(it.quantidade || 0) : 0);
+ }, 0);
  const totalBought = items.reduce((a, it) => {
    if (it.status !== "COMPRADO") return a;
    return a + Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
  }, 0);
+ const qtySummary = (() => {
+   const unLine = `${fmtQtyTotal(totalQtyUn)} un`;
+   const kgLine = `${fmtQtyTotal(totalQtyKg)} kg`;
+   if (opts.summaryMode === "KG_ONLY") {
+     return totalQtyKg > 0 ? kgLine : "0 kg";
+   }
+   if (totalQtyKg > 0.000001) {
+     return `${unLine}<div class="qty-sub">${kgLine}</div>`;
+   }
+   return unLine;
+ })();
  const summaryRow = items.length
    ? `
 <tr class="row-summary">
 <td><b>Resumo</b></td>
-<td>${fmtQtyTotal(totalQty)}</td>
+<td>${qtySummary}</td>
 <td></td>
 <td><b>${brl(totalBought)}</b></td>
 <td colspan="3"></td>
@@ -165,12 +183,30 @@ export function renderItemTable(items, opts = {}) {
 * Observação: o lápis do preço usa o MESMO mecanismo edit-cell do app.js.
 * O -/+ chama data-action="qty-step" (você precisa tratar isso no app.js).
 */
-export function renderItemMobileList(items) {
- const totalQty = items.reduce((a, it) => a + Number(it.quantidade || 0), 0);
+export function renderItemMobileList(items, opts = {}) {
+ const totalQtyUn = items.reduce((a, it) => {
+   const unit = String(it.unidade || "UN").toUpperCase();
+   return a + (unit === "KG" ? 0 : Number(it.quantidade || 0));
+ }, 0);
+ const totalQtyKg = items.reduce((a, it) => {
+   const unit = String(it.unidade || "UN").toUpperCase();
+   return a + (unit === "KG" ? Number(it.quantidade || 0) : 0);
+ }, 0);
  const totalBought = items.reduce((a, it) => {
    if (it.status !== "COMPRADO") return a;
    return a + Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
  }, 0);
+ const qtySummaryMobile = (() => {
+   const unLine = `${fmtQtyTotal(totalQtyUn)} un`;
+   const kgLine = `${fmtQtyTotal(totalQtyKg)} kg`;
+   if (opts.summaryMode === "KG_ONLY") {
+     return `<div class="mmeta">Qtd total: ${kgLine}</div>`;
+   }
+   if (totalQtyKg > 0.000001) {
+     return `<div class="mmeta">Qtd total: ${unLine}</div><div class="mmeta qty-sub">${kgLine}</div>`;
+   }
+   return `<div class="mmeta">Qtd total: ${unLine}</div>`;
+ })();
  const summaryCard = items.length
    ? `
 <div class="mcard summary">
@@ -178,7 +214,7 @@ export function renderItemMobileList(items) {
 <div class="row space-between">
 <div>
 <div class="mname">Resumo</div>
-<div class="mmeta">Qtd total: ${fmtQtyTotal(totalQty)}</div>
+${qtySummaryMobile}
 </div>
 <div class="mtotal">
 <div class="label">Total comprado</div>

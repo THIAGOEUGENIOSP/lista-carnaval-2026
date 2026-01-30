@@ -348,6 +348,14 @@ tr.row-bought td{
 }
 
 tr.row-summary td{
+
+.qty-sub{
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+tr.row-summary td{
   border-top: 1px dashed var(--border);
   font-weight: 700;
 }
