@@ -280,7 +280,6 @@ function renderApp() {
            ${renderItemListControls(state)}
           ${renderItemTable(filteredMain, { title: "Lista de Compras", summaryMode: "UN_WITH_KG" })}
           ${renderItemMobileList(filteredMain, { summaryMode: "UN_WITH_KG" })}
-          ${filteredChurrasco.length ? `<div class="card section only-mobile" style="margin-top:12px"><div class="row space-between"><h2>Churrasco</h2><div class="muted" style="font-size:12px">${filteredChurrasco.length} item(ns)</div></div></div>` : ""}
           ${renderItemTable(filteredChurrasco, { title: "Churrasco", summaryMode: "KG_ONLY" })}
           ${renderItemMobileList(filteredChurrasco, { summaryMode: "KG_ONLY" })}
         </div>
