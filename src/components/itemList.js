@@ -7,6 +7,19 @@ function fmtMoney(n) {
  const v = Number(n || 0);
  return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
+function fmtQty(it) {
+ const unit = String(it?.unidade || "UN").toUpperCase();
+ const n = Number(it?.quantidade || 0);
+ if (unit === "KG") {
+   const v = Number(n.toFixed(2));
+   const str = v.toLocaleString("pt-BR", {
+     minimumFractionDigits: v % 1 ? 2 : 0,
+     maximumFractionDigits: 2,
+   });
+   return `${str} kg`;
+ }
+ return `${Math.round(n)} un`;
+}
 export function renderItemListControls(state) {
  return `
 <div class="card section">
@@ -76,7 +89,7 @@ export function renderItemTable(items) {
 <td style="font-weight:700">${it.nome}</td>
 <td style="min-width:140px">
 <div class="editing-cell">
-<span data-view>${Number(it.quantidade || 0)}</span>
+<span data-view>${fmtQty(it)}</span>
 <button
                        class="icon-btn"
                        title="Editar quantidade"
@@ -166,7 +179,7 @@ export function renderItemMobileList(items) {
 </div>
 <div class="mfield">
 <div class="qty-edit-wrapper">
-<div class="qtynum-simple">${qtd}</div>
+<div class="qtynum-simple">${fmtQty(it)}</div>
 <div class="qty-controls">
 <button class="qtybtn-compact" title="Diminuir" data-action="qty-step" data-id="${it.id}" data-delta="-1">−</button>
 <button class="qtybtn-compact" title="Aumentar" data-action="qty-step" data-id="${it.id}" data-delta="1">+</button>

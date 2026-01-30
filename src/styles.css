@@ -91,6 +91,14 @@ h3{ font-size: 14px; }
   min-width: 180px;
 }
 .input::placeholder{ color: var(--muted); }
+select option{
+  background: var(--card);
+  color: var(--text);
+}
+[data-theme="light"] select option{
+  background: #ffffff;
+  color: #111827;
+}
 
 .grid{
   display:grid;

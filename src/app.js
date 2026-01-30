@@ -73,6 +73,7 @@ function normalizeItem(it) {
     ...it,
     quantidade: Number(it.quantidade || 0),
     valor_unitario: num(it.valor_unitario ?? 0),
+    unidade: String(it.unidade || "UN").toUpperCase(),
   };
 }
 
@@ -380,21 +381,40 @@ function bindPerRenderInputs() {
   // submit modal form
   const form = qs("#itemForm");
   if (form) {
+    const unitSelect = form.querySelector('select[name="unidade"]');
+    const qtyInput = form.querySelector('input[name="quantidade"]');
+    const applyQtyMode = () => {
+      if (!unitSelect || !qtyInput) return;
+      const isKg = unitSelect.value === "KG";
+      qtyInput.step = isKg ? "0.1" : "1";
+      qtyInput.inputMode = isKg ? "decimal" : "numeric";
+      qtyInput.placeholder = isKg ? "0,0" : "1";
+    };
+    if (unitSelect && qtyInput) {
+      unitSelect.addEventListener("change", applyQtyMode);
+      applyQtyMode();
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       try {
         const fd = new FormData(form);
         const id = fd.get("id");
+        const unidade = String(fd.get("unidade") || "UN").toUpperCase();
+        const rawQtd = String(fd.get("quantidade") || "0");
 
         // 🔥 IMPORTANTe: valor_unitario com vírgula funciona porque parseamos com num()
         const payload = {
           nome: String(fd.get("nome") || "").trim(),
           quantidade: Math.max(
             0,
-            parseInt(fd.get("quantidade") || "0", 10) || 0,
+            unidade === "KG"
+              ? num(rawQtd)
+              : parseInt(rawQtd, 10) || 0,
           ),
           valor_unitario: num(fd.get("valor_unitario") || 0),
           categoria: String(fd.get("categoria") || "Geral").trim() || "Geral",
+          unidade,
         };
 
         if (!payload.nome) {
@@ -471,11 +491,17 @@ function bindDelegatedEvents() {
 
       if (action === "qty-step") {
         const id = el.dataset.id;
-        const delta = parseInt(el.dataset.delta || "0", 10);
         const it = state.items.find((x) => x.id === id);
         if (!it) return;
-        const nextQtd = Math.max(0, Number(it.quantidade || 0) + delta);
-        const updated = normalizeItem(await updateItem(id, { quantidade: nextQtd }));
+        const step = it.unidade === "KG" ? 0.1 : 1;
+        const delta = Number(el.dataset.delta || "0") * step;
+        const nextQtd = Math.max(
+          0,
+          Number((Number(it.quantidade || 0) + delta).toFixed(2)),
+        );
+        const updated = normalizeItem(
+          await updateItem(id, { quantidade: nextQtd }),
+        );
         state.items = state.items.map((x) => (x.id === id ? updated : x));
         renderApp();
         return;
@@ -566,6 +592,7 @@ function bindDelegatedEvents() {
           field === "quantidade"
             ? Number(it.quantidade || 0)
             : num(it.valor_unitario || 0);
+        const isKg = field === "quantidade" && it.unidade === "KG";
 
         // 🔥 usando type="text" + inputmode="decimal" para aceitar vírgula
         cell.innerHTML = `
@@ -573,7 +600,9 @@ function bindDelegatedEvents() {
             class="input cell-input"
             type="text"
             inputmode="decimal"
-            placeholder="${field === "quantidade" ? "0" : "0,00"}"
+            placeholder="${
+              field === "quantidade" ? (isKg ? "0,0" : "0") : "0,00"
+            }"
             value="${currentValue}"
           />
           <div class="cell-actions">
@@ -596,6 +625,7 @@ function bindDelegatedEvents() {
       if (action === "save-cell") {
         const id = el.dataset.id;
         const field = el.dataset.field;
+        const it = state.items.find((x) => x.id === id);
 
         const cell = el.closest(".editing-cell");
         const inp = cell?.querySelector("input");
@@ -603,9 +633,12 @@ function bindDelegatedEvents() {
 
         const patch = {};
         if (field === "quantidade") {
+          const isKg = (it?.unidade || "UN") === "KG";
           patch.quantidade = Math.max(
             0,
-            parseInt(raw.replace(/[^\d]/g, ""), 10) || 0,
+            isKg
+              ? num(raw)
+              : parseInt(raw.replace(/[^\d]/g, ""), 10) || 0,
           );
         } else {
           patch.valor_unitario = num(raw);
