@@ -50,12 +50,14 @@ export function renderItemListControls(state) {
 </div>
  `;
 }
-export function renderItemTable(items) {
+export function renderItemTable(items, opts = {}) {
+ const title = opts.title || "Lista de Compras";
+ const countLabel = opts.countLabel || "item(ns)";
  return `
 <div class="card section" style="margin-top:12px">
 <div class="row space-between">
-<h2>Lista de Compras</h2>
-<div class="muted" style="font-size:12px">${items.length} item(ns)</div>
+<h2>${title}</h2>
+<div class="muted" style="font-size:12px">${items.length} ${countLabel}</div>
 </div>
 <div class="table-wrap" style="margin-top:10px">
 <table>
@@ -159,6 +161,7 @@ export function renderItemMobileList(items) {
 <div class="value">${fmtMoney(total)}</div>
 </div>
 </div>
+<div class="mmeta">Por: ${collabName(it)}</div>
 <div class="mrow">
 <div class="mrow-labels">
 <div class="mfield-label">Preço (unit)</div>

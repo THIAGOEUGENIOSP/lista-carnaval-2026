@@ -30,6 +30,13 @@ export function renderItemFormModal() {
             <option value="KG">Kg</option>
           </select>
         </div>
+        <div>
+          <label class="muted" style="font-size:12px">Categoria</label>
+          <select name="categoria">
+            <option value="Geral" selected>Geral</option>
+            <option value="Churrasco">Churrasco</option>
+          </select>
+        </div>
 
         <div>
           <label class="muted" style="font-size:12px">Valor unitário (R$)</label>
@@ -67,10 +74,12 @@ export function openModal({ title, subtitle, hint, data }) {
     form.quantidade.value = data.quantidade ?? 1;
     form.valor_unitario.value = data.valor_unitario ?? 0;
     form.unidade.value = (data.unidade || "UN").toUpperCase();
+    if (form.categoria) form.categoria.value = data.categoria || "Geral";
     form.id.value = data.id ?? "";
   } else {
     form.id.value = "";
     if (form.unidade) form.unidade.value = "UN";
+    if (form.categoria) form.categoria.value = "Geral";
   }
   if (form.unidade) {
     form.unidade.dispatchEvent(new Event("change", { bubbles: true }));

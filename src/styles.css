@@ -358,9 +358,11 @@ tr.row-bought .badge{
 
 /* ====== MOBILE: layout tipo app de compras (cards) ====== */
 .mobile-list{ display:none; } /* desktop esconde */
+.only-mobile{ display:none; }
 @media (max-width: 768px){
  .table-wrap{ display:none; }
  .mobile-list{ display:grid; gap:12px; margin-top:10px; }
+ .only-mobile{ display:block; }
  .mcard{
    background: var(--card);
    border: 1px solid var(--border);

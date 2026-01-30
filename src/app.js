@@ -153,8 +153,8 @@ function computeStatusCounts(items) {
   return { pending, bought };
 }
 
-function applyFilters() {
-  let arr = [...state.items];
+function applyFilters(items = state.items) {
+  let arr = [...items];
 
   if (state.filterStatus !== "ALL") {
     arr = arr.filter((it) => it.status === state.filterStatus);
@@ -185,19 +185,7 @@ function applyFilters() {
 }
 
 function rerenderTableOnly() {
-  const filtered = applyFilters();
-
-  // atualiza tabela desktop
-  const tableCard = document.querySelector(".table-wrap")?.parentElement;
-  if (tableCard) {
-    tableCard.outerHTML = renderItemTable(filtered);
-  }
-
-  // atualiza lista mobile
-  const mobileList = document.querySelector(".mobile-list");
-  if (mobileList) {
-    mobileList.outerHTML = renderItemMobileList(filtered);
-  }
+  renderApp();
 }
 
 
@@ -269,7 +257,10 @@ async function computeMonthlySeries() {
 function renderApp() {
   const periodLabel = state.currentPeriod?.nome || periodName(state.cursorDate);
   const userName = state.collaboratorName || "—";
-  const filtered = applyFilters();
+  const itemsMain = state.items.filter((it) => (it.categoria || "Geral") !== "Churrasco");
+  const itemsChurrasco = state.items.filter((it) => (it.categoria || "Geral") === "Churrasco");
+  const filteredMain = applyFilters(itemsMain);
+  const filteredChurrasco = applyFilters(itemsChurrasco);
   const kpis = computeKPIs(state.items);
   const byCollab = computeByCollaborator(state.items);
 
@@ -287,8 +278,11 @@ function renderApp() {
       <div class="grid main" style="margin-top:12px">
         <div>
            ${renderItemListControls(state)}
-          ${renderItemTable(filtered)}
-          ${renderItemMobileList(filtered)}
+          ${renderItemTable(filteredMain, { title: "Lista de Compras" })}
+          ${renderItemMobileList(filteredMain)}
+          ${filteredChurrasco.length ? `<div class="card section only-mobile" style="margin-top:12px"><div class="row space-between"><h2>Churrasco</h2><div class="muted" style="font-size:12px">${filteredChurrasco.length} item(ns)</div></div></div>` : ""}
+          ${renderItemTable(filteredChurrasco, { title: "Churrasco" })}
+          ${renderItemMobileList(filteredChurrasco)}
         </div>
         <div>
           ${renderAnalytics()}
@@ -365,7 +359,7 @@ function bindPerRenderInputs() {
   if (s) {
     s.addEventListener("input", () => {
       state.searchText = s.value;
-      rerenderTableOnly();
+      renderApp();
     });
   }
 
@@ -431,13 +425,15 @@ function bindPerRenderInputs() {
           toast.show({ title: "Salvo", message: "Item atualizado." });
         } else {
           // Verifica se existe item duplicado (mesmo nome ignorando acentos e plurais)
-          const duplicate = findDuplicateItem(payload.nome, state.items);
-          if (duplicate) {
-            toast.show({
-              title: "Item Duplicado",
-              message: `"${duplicate.nome}" já existe na lista. Deseja aumentar a quantidade?`,
-            });
-            return;
+          if (payload.categoria !== "Churrasco") {
+            const duplicate = findDuplicateItem(payload.nome, state.items);
+            if (duplicate) {
+              toast.show({
+                title: "Item Duplicado",
+                message: `"${duplicate.nome}" já existe na lista. Deseja aumentar a quantidade?`,
+              });
+              return;
+            }
           }
 
           const created = normalizeItem(
