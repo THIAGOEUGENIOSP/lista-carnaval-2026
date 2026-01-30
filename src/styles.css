@@ -347,6 +347,12 @@ tr.row-bought td{
   text-decoration: line-through;
 }
 
+tr.row-summary td{
+  border-top: 1px dashed var(--border);
+  font-weight: 700;
+}
+
+
 /* mantém botões/ícones legíveis mesmo riscado */
 tr.row-bought .btn,
 tr.row-bought .icon-btn,
@@ -368,6 +374,10 @@ tr.row-bought .badge{
    border: 1px solid var(--border);
    border-radius: 16px;
    overflow: hidden;
+ }
+ .mcard.summary{
+   border-style: dashed;
+   opacity: .95;
  }
  .mcard-inner{ padding: 12px; }
  .mcard-header{

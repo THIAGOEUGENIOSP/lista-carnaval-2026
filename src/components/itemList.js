@@ -7,6 +7,14 @@ function fmtMoney(n) {
  const v = Number(n || 0);
  return `R$ ${v.toFixed(2).replace(".", ",")}`;
 }
+function fmtQtyTotal(n) {
+ const v = Number(n || 0);
+ const hasDecimal = Math.abs(v % 1) > 0.000001;
+ return v.toLocaleString("pt-BR", {
+   minimumFractionDigits: hasDecimal ? 2 : 0,
+   maximumFractionDigits: 2,
+ });
+}
 function fmtQty(it) {
  const unit = String(it?.unidade || "UN").toUpperCase();
  const n = Number(it?.quantidade || 0);
@@ -53,6 +61,21 @@ export function renderItemListControls(state) {
 export function renderItemTable(items, opts = {}) {
  const title = opts.title || "Lista de Compras";
  const countLabel = opts.countLabel || "item(ns)";
+ const totalQty = items.reduce((a, it) => a + Number(it.quantidade || 0), 0);
+ const totalBought = items.reduce((a, it) => {
+   if (it.status !== "COMPRADO") return a;
+   return a + Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+ }, 0);
+ const summaryRow = items.length
+   ? `
+<tr class="row-summary">
+<td><b>Resumo</b></td>
+<td>${fmtQtyTotal(totalQty)}</td>
+<td></td>
+<td><b>${brl(totalBought)}</b></td>
+<td colspan="3"></td>
+</tr>`
+   : "";
  return `
 <div class="card section" style="margin-top:12px">
 <div class="row space-between">
@@ -126,6 +149,7 @@ export function renderItemTable(items, opts = {}) {
              `;
            })
            .join("")}
+         ${summaryRow}
 </tbody>
 </table>
 </div>
@@ -142,6 +166,28 @@ export function renderItemTable(items, opts = {}) {
 * O -/+ chama data-action="qty-step" (você precisa tratar isso no app.js).
 */
 export function renderItemMobileList(items) {
+ const totalQty = items.reduce((a, it) => a + Number(it.quantidade || 0), 0);
+ const totalBought = items.reduce((a, it) => {
+   if (it.status !== "COMPRADO") return a;
+   return a + Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+ }, 0);
+ const summaryCard = items.length
+   ? `
+<div class="mcard summary">
+<div class="mcard-inner">
+<div class="row space-between">
+<div>
+<div class="mname">Resumo</div>
+<div class="mmeta">Qtd total: ${fmtQtyTotal(totalQty)}</div>
+</div>
+<div class="mtotal">
+<div class="label">Total comprado</div>
+<div class="value">${fmtMoney(totalBought)}</div>
+</div>
+</div>
+</div>
+</div>`
+   : "";
  return `
 <div class="mobile-list" aria-label="Lista mobile">
      ${items
@@ -207,6 +253,7 @@ export function renderItemMobileList(items) {
          `;
        })
        .join("")}
+     ${summaryCard}
 </div>
  `;
 }
