@@ -99,6 +99,9 @@ function normalizeNameKey(value) {
 }
 
 function totalOfItem(it) {
+  const isChurrasco =
+    String(it?.categoria || "").trim().toLowerCase() === "churrasco";
+  if (isChurrasco) return num(it.valor_unitario || 0);
   return Number(it.quantidade || 0) * num(it.valor_unitario || 0);
 }
 

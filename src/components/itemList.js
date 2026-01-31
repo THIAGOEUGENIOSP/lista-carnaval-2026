@@ -51,7 +51,10 @@ function sumTotals(items) {
   return items.reduce(
     (acc, it) => {
       acc.qtd += Number(it.quantidade || 0);
-      acc.total += Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+      const total = isChurrasco(it)
+        ? Number(it.valor_unitario || 0)
+        : Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+      acc.total += total;
       return acc;
     },
     { qtd: 0, total: 0 },
@@ -102,8 +105,9 @@ function renderTableBlock({ title, items, showCategory }) {
         <tbody>
           ${items
             .map((it) => {
-              const total =
-                Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+              const total = isChurrasco(it)
+                ? Number(it.valor_unitario || 0)
+                : Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
               const isBought = it.status === "COMPRADO";
 
               const statusBadge = isBought
@@ -257,8 +261,9 @@ export function renderItemMobileList(items, sortKey) {
       <div class="mobile-list" aria-label="Lista mobile ${title}">
         ${blockItems
           .map((it) => {
-            const totalItem =
-              Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+            const totalItem = isChurrasco(it)
+              ? Number(it.valor_unitario || 0)
+              : Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
             const isBought = it.status === "COMPRADO";
             const next = isBought ? "PENDENTE" : "COMPRADO";
             const qtdDisplay = isChurrasco(it)
