@@ -542,6 +542,7 @@ tr.row-bought .badge{
    justify-content: space-between;
    gap: 6px;
    background: rgba(255,255,255,.03);
+   cursor: pointer;
  }
  .mrow-values .pill{
    width: 100%;
@@ -551,6 +552,15 @@ tr.row-bought .badge{
    font-weight: 800;
    font-size: 12px;
    white-space: nowrap;
+ }
+ .pill input{
+   width: 100%;
+   border: none;
+   outline: none;
+   background: transparent;
+   color: var(--text);
+   font-weight: 800;
+   font-size: 12px;
  }
  .qtybox{
    display:flex;

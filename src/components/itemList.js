@@ -292,10 +292,10 @@ export function renderItemMobileList(items, sortKey) {
                     <div class="mfield-label mfield-actions-label">Ações</div>
                   </div>
                   <div class="mrow-values">
-                    <div class="pill">
+                    <div class="pill" role="button" data-action="edit-mobile" data-field="valor_unitario" data-id="${it.id}">
                       <div class="pvalue">${brl(it.valor_unitario)}</div>
                     </div>
-                    <div class="pill qtybox">
+                    <div class="pill qtybox" role="button" data-action="edit-mobile" data-field="quantidade" data-id="${it.id}">
                       <div class="pvalue">${qtdDisplay}</div>
                     </div>
                     <div class="mactions-inline">

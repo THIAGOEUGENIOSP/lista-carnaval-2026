@@ -244,6 +244,32 @@ function rerenderTableOnly() {
   tableCard.outerHTML = renderItemTable(filtered, state.sortKey);
 }
 
+async function saveMobileInlineEdit({ id, field, rawValue, item }) {
+  const raw = String(rawValue ?? "").trim() || "0";
+
+  const patch = {};
+  if (field === "quantidade") {
+    const qtdParsed = parseQuantidade(raw, item.categoria);
+    if (!qtdParsed) {
+      toast.show({
+        title: "Validação",
+        message:
+          item.categoria === "Churrasco"
+            ? "Quantidade inválida. Use ex: 1kg ou 0.5g."
+            : "Quantidade inválida. Use apenas números (ex: 2 ou 2,5).",
+      });
+      return false;
+    }
+    patch.quantidade = qtdParsed.value;
+  } else {
+    patch.valor_unitario = num(raw);
+  }
+
+  const updated = normalizeItem(await updateItem(id, patch));
+  state.items = state.items.map((x) => (x.id === id ? updated : x));
+  return true;
+}
+
 function renderNameGate() {
   root.innerHTML = `
     <div class="container">
@@ -653,6 +679,79 @@ function bindDelegatedEvents() {
         const inp = cell.querySelector("input");
         inp.focus();
         inp.select();
+        return;
+      }
+
+      if (action === "edit-mobile") {
+        const id = el.dataset.id;
+        const field = el.dataset.field;
+        const it = state.items.find((x) => x.id === id);
+        if (!it) return;
+
+        const pill = el.closest(".pill");
+        if (!pill) return;
+        if (pill.querySelector("input")) return;
+
+        const currentValue =
+          field === "quantidade"
+            ? formatQuantidade(it.quantidade ?? 0, it.categoria)
+            : String(num(it.valor_unitario || 0));
+
+        const placeholder =
+          field === "quantidade" ? "Ex: 1kg ou 0.5g" : "0,00";
+
+        pill.innerHTML = `
+          <input
+            type="text"
+            inputmode="decimal"
+            placeholder="${placeholder}"
+            value="${currentValue}"
+          />
+        `;
+
+        const input = pill.querySelector("input");
+        if (!input) return;
+
+        const commit = async () => {
+          if (input.dataset.saving === "1") return;
+          input.dataset.saving = "1";
+          try {
+            const ok = await saveMobileInlineEdit({
+              id,
+              field,
+              rawValue: input.value,
+              item: it,
+            });
+            if (!ok) {
+              rerenderListOnly();
+              rerenderTableOnly();
+              return;
+            }
+            toast.show({ title: "Salvo", message: "Atualizado com sucesso." });
+            rerenderListOnly();
+            rerenderTableOnly();
+          } catch (err) {
+            toast.show({
+              title: "Erro",
+              message: err.message || "Falha ao salvar.",
+            });
+            rerenderListOnly();
+            rerenderTableOnly();
+          }
+        };
+
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            input.blur();
+          }
+        });
+        input.addEventListener("blur", () => {
+          void commit();
+        });
+
+        input.focus();
+        input.select();
         return;
       }
 
