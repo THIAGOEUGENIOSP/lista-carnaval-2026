@@ -20,7 +20,7 @@ export function renderCollaboratorsSummary(rows) {
         <div class="muted" style="font-size:12px">Total comprado: <b>${brl(totalGeral)}</b></div>
       </div>
 
-      <div class="table-wrap" style="margin-top:10px">
+      <div class="collaborators-table-wrap" style="margin-top:10px">
         <table>
           <thead>
             <tr>
@@ -51,6 +51,40 @@ export function renderCollaboratorsSummary(rows) {
               .join("")}
           </tbody>
         </table>
+      </div>
+
+      <div class="collaborators-mobile" style="margin-top:10px">
+        ${rows
+          .map((r) => {
+            const pct =
+              totalGeral > 0
+                ? Math.round((r.gasto_comprado / totalGeral) * 100)
+                : 0;
+            return `
+              <div class="collab-card">
+                <div class="collab-name">${r.nome}</div>
+                <div class="collab-stats">
+                  <div class="collab-stat">
+                    <div class="stat-label">Adicionados</div>
+                    <div class="stat-value">${r.itens_adicionados}</div>
+                  </div>
+                  <div class="collab-stat">
+                    <div class="stat-label">Comprados</div>
+                    <div class="stat-value">${r.itens_comprados}</div>
+                  </div>
+                  <div class="collab-stat">
+                    <div class="stat-label">Gasto</div>
+                    <div class="stat-value">${brl(r.gasto_comprado)}</div>
+                  </div>
+                  <div class="collab-stat">
+                    <div class="stat-label">% Total</div>
+                    <div class="stat-value">${pct}%</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("")}
       </div>
     </div>
   `;

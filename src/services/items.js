@@ -5,7 +5,7 @@ export async function fetchItems(periodoId) {
   const res = await sb
     .from("items")
     .select(
-      "id,nome,quantidade,valor_unitario,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
+      "id,nome,quantidade,valor_unitario,unidade,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
     )
     .eq("periodo_id", periodoId)
     .order("created_at", { ascending: false });
@@ -19,7 +19,7 @@ export async function addItem(payload) {
     .from("items")
     .insert(payload)
     .select(
-      "id,nome,quantidade,valor_unitario,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
+      "id,nome,quantidade,valor_unitario,unidade,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
     )
     .single();
 
@@ -32,7 +32,7 @@ export async function updateItem(id, patch) {
     .update(patch)
     .eq("id", id)
     .select(
-      "id,nome,quantidade,valor_unitario,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
+      "id,nome,quantidade,valor_unitario,unidade,categoria,status,periodo_id,criado_por_nome,created_at,updated_at",
     )
     .single();
 
@@ -67,7 +67,7 @@ export async function copyItemsToPeriod({
 }) {
   const src = await sb
     .from("items")
-    .select("nome,quantidade,valor_unitario,categoria")
+    .select("nome,quantidade,valor_unitario,unidade,categoria")
     .eq("periodo_id", fromPeriodId);
 
   const rows = mustOk(src) || [];

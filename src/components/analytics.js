@@ -45,6 +45,12 @@ export function buildCharts() {
   const ctxMonthly = document.getElementById("chartMonthly");
   const ctxStatus = document.getElementById("chartStatus");
 
+  // Verifica se os elementos existem no DOM
+  if (!ctxPrice || !ctxMonthly || !ctxStatus) {
+    console.warn("Elementos canvas não encontrados no DOM");
+    return null;
+  }
+
   const priceChart = new Chart(ctxPrice, {
     type: "bar",
     data: {
@@ -87,6 +93,8 @@ export function updateCharts({
   monthlySeries,
   statusCounts,
 }) {
+  // Se os gráficos não foram inicializados, não tenta atualizar
+  if (!charts) return;
   charts.priceChart.data.datasets[0].data = [
     priceBuckets.at10,
     priceBuckets.between10and50,
