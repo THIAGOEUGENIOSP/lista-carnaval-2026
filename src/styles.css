@@ -374,6 +374,13 @@ tr.row-bought .badge{
  .table-wrap{ display:none; }
  .mobile-list{ display:grid; gap:12px; margin-top:10px; }
  .only-mobile{ display:block; }
+  /* iOS: evita zoom automático ao focar inputs */
+  .input, select, textarea{
+    font-size: 16px;
+  }
+  .modal .input, .modal select, .modal textarea{
+    font-size: 16px;
+  }
  .mcard{
    background: var(--card);
    border: 1px solid var(--border);
