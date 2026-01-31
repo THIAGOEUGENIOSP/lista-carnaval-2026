@@ -1,14 +1,13 @@
 // src/app.js
 import { sb } from "./config/supabase.js";
 import { getTheme, setTheme, qs, qsa } from "./utils/ui.js";
-import { num } from "./utils/format.js";
+import { num, formatQuantidade } from "./utils/format.js";
 import { addMonths, monthKey, periodName } from "./utils/period.js";
-import { renderCollaboratorsSummary } from "./components/collaborators.js";
-
 
 import { mountToast } from "./components/toast.js";
 import { renderHeader } from "./components/header.js";
 import { renderDashboard } from "./components/dashboard.js";
+import { renderCollaboratorsSummary } from "./components/collaborators.js";
 import {
   renderItemFormModal,
   openModal,
@@ -17,6 +16,7 @@ import {
 import {
   renderItemListControls,
   renderItemTable,
+  renderItemMobileList,
 } from "./components/itemList.js";
 import {
   renderAnalytics,
@@ -56,7 +56,7 @@ const state = {
 
   filterStatus: "ALL",
   searchText: "",
-  sortKey: "created_desc",
+  sortKey: "name_asc",
 
   charts: null,
   delegatedBound: false,
@@ -67,7 +67,6 @@ function saveCursor() {
 }
 
 function normalizeItem(it) {
-  // Supabase pode retornar numeric como string -> normaliza aqui
   return {
     ...it,
     quantidade: Number(it.quantidade || 0),
@@ -75,8 +74,54 @@ function normalizeItem(it) {
   };
 }
 
+function getCollaboratorName(it) {
+  const v =
+    it?.criado_por_nome ??
+    it?.criado_por ??
+    it?.colaborador ??
+    it?.usuario_nome ??
+    "";
+
+  const name = String(v).trim();
+  return name || "—";
+}
+
+function normalizeNameKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "") // remove "(g)", "(kg)", etc.
+    .replace(/\b(kg|g|un|und|unidade|unidades)\b/g, "") // remove common units
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function totalOfItem(it) {
   return Number(it.quantidade || 0) * num(it.valor_unitario || 0);
+}
+
+function parseQuantidade(raw, categoria) {
+  const txt = String(raw ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  if (!txt) return null;
+
+  const cat = String(categoria || "").trim().toLowerCase();
+  const isChurrasco = cat === "churrasco";
+
+  const match = isChurrasco
+    ? txt.match(/^(\d+(?:[.,]\d+)?)(kg|g)?$/)
+    : txt.match(/^(\d+(?:[.,]\d+)?)$/);
+
+  if (!match) return null;
+
+  let value = Number(match[1].replace(",", "."));
+  if (!Number.isFinite(value) || value < 0) return null;
+
+  const unit = isChurrasco ? match[2] || "" : "";
+  if (unit === "g") value = value / 1000;
+
+  return { value, unit, isChurrasco };
 }
 
 function computeKPIs(items) {
@@ -107,8 +152,8 @@ function computeByCollaborator(items) {
   const map = new Map();
 
   for (const it of items) {
-    const nome = (it.criado_por_nome || "—").trim() || "—";
-    const total = Number(it.quantidade || 0) * num(it.valor_unitario || 0);
+    const nome = getCollaboratorName(it);
+    const total = totalOfItem(it);
     const bought = it.status === "COMPRADO";
 
     if (!map.has(nome)) {
@@ -122,17 +167,17 @@ function computeByCollaborator(items) {
 
     const row = map.get(nome);
     row.itens_adicionados += 1;
+
     if (bought) {
       row.itens_comprados += 1;
       row.gasto_comprado += total;
     }
   }
 
-  return [...map.values()]
+  return Array.from(map.values())
     .map((r) => ({ ...r, gasto_comprado: Number(r.gasto_comprado.toFixed(2)) }))
     .sort((a, b) => b.gasto_comprado - a.gasto_comprado);
 }
-
 
 function computePriceBuckets(items) {
   const buckets = { at10: 0, between10and50: 0, above50: 0 };
@@ -182,16 +227,19 @@ function applyFilters() {
   return arr;
 }
 
+function rerenderListOnly() {
+  const list = document.querySelector(".mobile-list");
+  if (!list) return;
+  const filtered = applyFilters();
+  list.outerHTML = renderItemMobileList(filtered, state.sortKey);
+}
+
 function rerenderTableOnly() {
   const tableCard = document.querySelector(".table-wrap")?.parentElement;
   if (!tableCard) return;
-
   const filtered = applyFilters();
-
-  // substitui apenas o card da tabela
-  tableCard.outerHTML = renderItemTable(filtered);
+  tableCard.outerHTML = renderItemTable(filtered, state.sortKey);
 }
-
 
 function renderNameGate() {
   root.innerHTML = `
@@ -247,6 +295,7 @@ async function computeMonthlySeries() {
     .from("items")
     .select("periodo_id,quantidade,valor_unitario")
     .in("periodo_id", ids);
+
   if (res.error) throw res.error;
 
   const items = (res.data || []).map(normalizeItem);
@@ -269,21 +318,20 @@ function renderApp() {
   const kpis = computeKPIs(state.items);
   const byCollab = computeByCollaborator(state.items);
 
-
   root.innerHTML = `
     <div class="container">
       ${renderHeader({ periodLabel, userName, theme: state.theme })}
 
       <div style="margin-top:12px">
-  ${renderDashboard(kpis)}
-  ${renderCollaboratorsSummary(byCollab)}
-</div>
-
+        ${renderDashboard(kpis)}
+        ${renderCollaboratorsSummary(byCollab)}
+      </div>
 
       <div class="grid main" style="margin-top:12px">
         <div>
           ${renderItemListControls(state)}
-          ${renderItemTable(filtered)}
+          ${renderItemTable(filtered, state.sortKey)}
+          ${renderItemMobileList(filtered, state.sortKey)}
         </div>
         <div>
           ${renderAnalytics()}
@@ -294,7 +342,6 @@ function renderApp() {
     </div>
   `;
 
- 
   // Troca "Sair" por "Trocar nome"
   const logoutBtn = qs('[data-action="logout"]');
   if (logoutBtn) {
@@ -333,13 +380,11 @@ function renderApp() {
     }
   })();
 
-  // Delegation só precisa ser ligado 1 vez
   if (!state.delegatedBound) {
     bindDelegatedEvents();
     state.delegatedBound = true;
   }
 
-  // Inputs (busca e sort) precisam listener por render
   bindPerRenderInputs();
 }
 
@@ -352,12 +397,13 @@ function bindPerRenderInputs() {
     });
   });
 
-  // busca
+  // busca (sem travar)
   const s = qs("#searchInput");
   if (s) {
     s.addEventListener("input", () => {
       state.searchText = s.value;
       rerenderTableOnly();
+      rerenderListOnly();
     });
   }
 
@@ -373,19 +419,35 @@ function bindPerRenderInputs() {
   // submit modal form
   const form = qs("#itemForm");
   if (form) {
+    const qtdInput = form.querySelector('input[name="quantidade"]');
+    const categoriaSelect = form.querySelector('select[name="categoria"]');
+    const tipoSelect = form.querySelector('select[name="tipo"]');
+
+    const syncTipo = () => {
+      if (!categoriaSelect || !tipoSelect) return;
+      const isChurrasco = categoriaSelect.value === "Churrasco";
+      tipoSelect.value = isChurrasco ? "PESO" : "UNIDADE";
+      if (qtdInput) {
+        qtdInput.placeholder = isChurrasco
+          ? "Ex: 1kg ou 0.5g"
+          : "Ex: 2 ou 2,5";
+      }
+    };
+
+    if (categoriaSelect) {
+      categoriaSelect.addEventListener("change", syncTipo);
+      syncTipo();
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       try {
         const fd = new FormData(form);
         const id = fd.get("id");
 
-        // 🔥 IMPORTANTe: valor_unitario com vírgula funciona porque parseamos com num()
         const payload = {
           nome: String(fd.get("nome") || "").trim(),
-          quantidade: Math.max(
-            0,
-            parseInt(fd.get("quantidade") || "0", 10) || 0,
-          ),
+          quantidade: 0,
           valor_unitario: num(fd.get("valor_unitario") || 0),
           categoria: String(fd.get("categoria") || "Geral").trim() || "Geral",
         };
@@ -397,6 +459,43 @@ function bindPerRenderInputs() {
           });
           return;
         }
+
+        const isChurrasco =
+          String(payload.categoria || "").trim().toLowerCase() === "churrasco";
+        if (!isChurrasco) {
+          const key = normalizeNameKey(payload.nome);
+          const exists = state.items.some((it) => {
+            if (id && it.id === id) return false;
+            const itIsChurrasco =
+              String(it.categoria || "").trim().toLowerCase() === "churrasco";
+            if (itIsChurrasco) return false;
+            return normalizeNameKey(it.nome) === key;
+          });
+
+          if (exists) {
+            toast.show({
+              title: "Duplicado",
+              message: "Esse item já existe na Lista de Compras.",
+            });
+            return;
+          }
+        }
+
+        const qtdParsed = parseQuantidade(
+          fd.get("quantidade"),
+          payload.categoria,
+        );
+        if (!qtdParsed) {
+          toast.show({
+            title: "Validação",
+            message:
+              payload.categoria === "Churrasco"
+                ? "Quantidade inválida. Use ex: 1kg ou 0.5g."
+                : "Quantidade inválida. Use apenas números (ex: 2 ou 2,5).",
+          });
+          return;
+        }
+        payload.quantidade = qtdParsed.value;
 
         if (id) {
           const updated = normalizeItem(await updateItem(id, payload));
@@ -426,7 +525,6 @@ function bindPerRenderInputs() {
     });
   }
 
-  // clicar fora do modal fecha
   const backdrop = qs("#modalBackdrop");
   if (backdrop) {
     backdrop.addEventListener("click", (e) => {
@@ -435,7 +533,6 @@ function bindPerRenderInputs() {
   }
 }
 
-// ✅ EVENT DELEGATION: pega cliques inclusive de botões criados dinamicamente (Salvar/Cancelar)
 function bindDelegatedEvents() {
   root.addEventListener("click", async (e) => {
     const el = e.target.closest("[data-action]");
@@ -482,8 +579,6 @@ function bindDelegatedEvents() {
           hint: `Colaborador: ${state.collaboratorName}`,
           data: null,
         });
-
-        // 💡 se você quiser aceitar vírgula no modal, troque no itemForm.js o input de valor_unitario pra text (te passo se quiser)
         return;
       }
 
@@ -495,7 +590,7 @@ function bindDelegatedEvents() {
         openModal({
           title: "Editar item",
           subtitle: `Período: ${state.currentPeriod.nome}`,
-          hint: `Criado por: ${it.criado_por_nome || "—"}`,
+          hint: `Criado por: ${getCollaboratorName(it)}`,
           data: it,
         });
         return;
@@ -522,7 +617,7 @@ function bindDelegatedEvents() {
         return;
       }
 
-      // ====== EDITAR CÉLULA (LÁPIS) ======
+      // editar célula (lápis)
       if (action === "edit-cell") {
         const id = el.dataset.id;
         const field = el.dataset.field; // quantidade | valor_unitario
@@ -535,16 +630,15 @@ function bindDelegatedEvents() {
 
         const currentValue =
           field === "quantidade"
-            ? Number(it.quantidade || 0)
+            ? formatQuantidade(it.quantidade ?? 0, it.categoria)
             : num(it.valor_unitario || 0);
 
-        // 🔥 usando type="text" + inputmode="decimal" para aceitar vírgula
         cell.innerHTML = `
           <input
             class="input cell-input"
             type="text"
             inputmode="decimal"
-            placeholder="${field === "quantidade" ? "0" : "0,00"}"
+            placeholder="${field === "quantidade" ? "Ex: 1kg ou 0.5g" : "0,00"}"
             value="${currentValue}"
           />
           <div class="cell-actions">
@@ -571,13 +665,23 @@ function bindDelegatedEvents() {
         const cell = el.closest(".editing-cell");
         const inp = cell?.querySelector("input");
         const raw = String(inp?.value ?? "0");
+        const it = state.items.find((x) => x.id === id);
+        if (!it) return;
 
         const patch = {};
         if (field === "quantidade") {
-          patch.quantidade = Math.max(
-            0,
-            parseInt(raw.replace(/[^\d]/g, ""), 10) || 0,
-          );
+          const qtdParsed = parseQuantidade(raw, it.categoria);
+          if (!qtdParsed) {
+            toast.show({
+              title: "Validação",
+              message:
+                it.categoria === "Churrasco"
+                  ? "Quantidade inválida. Use ex: 1kg ou 0.5g."
+                  : "Quantidade inválida. Use apenas números (ex: 2 ou 2,5).",
+            });
+            return;
+          }
+          patch.quantidade = qtdParsed.value;
         } else {
           patch.valor_unitario = num(raw);
         }
@@ -589,7 +693,6 @@ function bindDelegatedEvents() {
         renderApp();
         return;
       }
-      // ================================
 
       if (action === "zero-prices") {
         if (!confirm(`Zerar preços de ${state.currentPeriod.nome}?`)) return;

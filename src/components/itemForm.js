@@ -1,3 +1,5 @@
+import { formatQuantidade } from "../utils/format.js";
+
 export function renderItemFormModal() {
   return `
   <div class="modal-backdrop" id="modalBackdrop">
@@ -20,17 +22,35 @@ export function renderItemFormModal() {
 
         <div>
           <label class="muted" style="font-size:12px">Quantidade</label>
-          <input class="input" name="quantidade" type="number" min="0" step="1" value="1" required />
+          <input
+            class="input"
+            name="quantidade"
+            type="text"
+            inputmode="decimal"
+            placeholder="Ex: 2 ou 1kg, 500g"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="muted" style="font-size:12px">Tipo</label>
+          <select name="tipo">
+            <option value="UNIDADE">Unidade</option>
+            <option value="PESO">Peso (kg/g)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="muted" style="font-size:12px">Categoria</label>
+          <select name="categoria">
+            <option value="Geral">Geral</option>
+            <option value="Churrasco">Churrasco</option>
+          </select>
         </div>
 
         <div>
           <label class="muted" style="font-size:12px">Valor unitário (R$)</label>
           <input class="input" name="valor_unitario" type="number" min="0" step="0.01" value="0" required />
-        </div>
-
-        <div class="full">
-          <label class="muted" style="font-size:12px">Categoria</label>
-          <input class="input" name="categoria" placeholder="Ex: Bebidas, Churrasco, Limpeza..." />
         </div>
 
         <div class="full row space-between" style="margin-top:8px">
@@ -48,6 +68,17 @@ export function renderItemFormModal() {
   `;
 }
 
+function ensureOption(selectEl, value) {
+  if (!value || !selectEl) return;
+  const exists = Array.from(selectEl.options).some((o) => o.value === value);
+  if (exists) return;
+
+  const opt = document.createElement("option");
+  opt.value = value;
+  opt.textContent = value;
+  selectEl.appendChild(opt);
+}
+
 export function openModal({ title, subtitle, hint, data }) {
   const backdrop = document.getElementById("modalBackdrop");
   backdrop.style.display = "flex";
@@ -61,14 +92,28 @@ export function openModal({ title, subtitle, hint, data }) {
 
   if (data) {
     form.nome.value = data.nome ?? "";
-    form.quantidade.value = data.quantidade ?? 1;
+    form.quantidade.value = formatQuantidade(
+      data.quantidade ?? 1,
+      data.categoria,
+    );
     form.valor_unitario.value = data.valor_unitario ?? 0;
+
+    ensureOption(form.categoria, data.categoria);
     form.categoria.value = data.categoria ?? "Geral";
+    form.tipo.value = data.categoria === "Churrasco" ? "PESO" : "UNIDADE";
+
     form.id.value = data.id ?? "";
   } else {
     form.categoria.value = "Geral";
+    form.tipo.value = "UNIDADE";
     form.id.value = "";
+    form.quantidade.value = "";
   }
+
+  const isChurrasco = form.categoria.value === "Churrasco";
+  form.quantidade.placeholder = isChurrasco
+    ? "Ex: 1kg ou 0.5g"
+    : "Ex: 2 ou 2,5";
 
   form.nome.focus();
 }

@@ -1,5 +1,185 @@
 // src/components/itemList.js
-import { brl } from "../utils/format.js";
+import { brl, formatQuantidade } from "../utils/format.js";
+
+function collabName(it) {
+  return (
+    it?.criado_por_nome ||
+    it?.criado_por ||
+    it?.colaborador ||
+    it?.usuario_nome ||
+    "—"
+  );
+}
+
+function isChurrasco(it) {
+  return String(it?.categoria || "").trim().toLowerCase() === "churrasco";
+}
+
+function sortItems(items, sortKey) {
+  const arr = [...items];
+  switch (sortKey) {
+    case "name_asc":
+      arr.sort((a, b) =>
+        (a.nome || "").localeCompare(b.nome || "", "pt-BR", {
+          sensitivity: "base",
+        }),
+      );
+      break;
+    case "value_desc":
+      arr.sort(
+        (a, b) =>
+          Number(b.quantidade || 0) * Number(b.valor_unitario || 0) -
+          Number(a.quantidade || 0) * Number(a.valor_unitario || 0),
+      );
+      break;
+    case "value_asc":
+      arr.sort(
+        (a, b) =>
+          Number(a.quantidade || 0) * Number(a.valor_unitario || 0) -
+          Number(b.quantidade || 0) * Number(b.valor_unitario || 0),
+      );
+      break;
+    case "created_desc":
+    default:
+      arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+  }
+  return arr;
+}
+
+function sumTotals(items) {
+  return items.reduce(
+    (acc, it) => {
+      acc.qtd += Number(it.quantidade || 0);
+      acc.total += Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+      return acc;
+    },
+    { qtd: 0, total: 0 },
+  );
+}
+
+function renderSummaryRow(items, forChurrasco) {
+  const { qtd, total } = sumTotals(items);
+  const qtdLabel = forChurrasco
+    ? formatQuantidade(qtd, "Churrasco")
+    : `${qtd.toLocaleString("pt-BR")} un`;
+
+  return `
+    <tr class="row-summary">
+      <td><b>Resumo</b></td>
+      <td><b>${qtdLabel}</b></td>
+      <td>—</td>
+      <td><b>${brl(total)}</b></td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+  `;
+}
+
+function renderTableBlock({ title, items, showCategory }) {
+  return `
+  <div class="card section" style="margin-top:12px">
+    <div class="row space-between">
+      <h2>${title}</h2>
+      <div class="muted" style="font-size:12px">${items.length} item(ns)</div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:10px">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qtd</th>
+            <th>V. Unit.</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Colaborador</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${items
+            .map((it) => {
+              const total =
+                Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+              const isBought = it.status === "COMPRADO";
+
+              const statusBadge = isBought
+                ? `<span class="badge ok" role="button"
+                    data-action="toggle-status"
+                    data-id="${it.id}"
+                    data-next="PENDENTE">✔ Comprado</span>`
+                : `<span class="badge pending" role="button"
+                    data-action="toggle-status"
+                    data-id="${it.id}"
+                    data-next="COMPRADO">⏳ Pendente</span>`;
+
+              const qtdDisplay = isChurrasco(it)
+                ? formatQuantidade(it.quantidade, it.categoria)
+                : it.quantidade;
+
+              return `
+              <tr class="${isBought ? "row-bought" : ""}">
+                <td>
+                  <div style="font-weight:700">${it.nome}</div>
+                  ${
+                    showCategory
+                      ? `<div class="muted" style="font-size:12px;margin-top:2px">
+                        ${it.categoria || "Geral"}
+                      </div>`
+                      : ""
+                  }
+                </td>
+
+                <td style="min-width:140px">
+                  <div class="editing-cell">
+                    <span data-view>${qtdDisplay}</span>
+                    <button
+                      class="icon-btn"
+                      title="Editar quantidade"
+                      data-action="edit-cell"
+                      data-field="quantidade"
+                      data-id="${it.id}"
+                    >✏️</button>
+                  </div>
+                </td>
+
+                <td style="min-width:180px">
+                  <div class="editing-cell">
+                    <span data-view>${brl(it.valor_unitario)}</span>
+                    <button
+                      class="icon-btn"
+                      title="Editar valor unitário"
+                      data-action="edit-cell"
+                      data-field="valor_unitario"
+                      data-id="${it.id}"
+                    >✏️</button>
+                  </div>
+                </td>
+
+                <td><b>${brl(total)}</b></td>
+                <td>${statusBadge}</td>
+                <td>${collabName(it)}</td>
+
+                <td>
+                  <div class="row" style="gap:6px">
+                    <button class="btn small" data-action="edit" data-id="${it.id}">Editar</button>
+                    <button class="btn small danger" data-action="delete" data-id="${it.id}">Excluir</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+            })
+            .join("")}
+          ${renderSummaryRow(items, !showCategory)}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  `;
+}
 
 export function renderItemListControls(state) {
   return `
@@ -35,109 +215,120 @@ export function renderItemListControls(state) {
   `;
 }
 
-export function renderItemTable(items) {
+export function renderItemTable(items, sortKey) {
+  const churrasco = sortItems(items.filter(isChurrasco), sortKey);
+  const others = sortItems(items.filter((it) => !isChurrasco(it)), sortKey);
+
   return `
-  <div class="card section" style="margin-top:12px">
-    <div class="row space-between">
-      <h2>Lista de Compras</h2>
-      <div class="muted" style="font-size:12px">${items.length} item(ns)</div>
-    </div>
+    ${renderTableBlock({
+      title: "Lista de Compras",
+      items: others,
+      showCategory: true,
+    })}
+    ${renderTableBlock({
+      title: "Churrasco",
+      items: churrasco,
+      showCategory: false,
+    })}
+  `;
+}
 
-    <div class="table-wrap" style="margin-top:10px">
-      <table>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Qtd</th>
-            <th>V. Unit.</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Colaborador</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
+export function renderItemMobileList(items, sortKey) {
+  const churrasco = sortItems(items.filter(isChurrasco), sortKey);
+  const others = sortItems(items.filter((it) => !isChurrasco(it)), sortKey);
 
-        <tbody>
-          ${items
-            .map((it) => {
-              const total =
-                Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
-              const isBought = it.status === "COMPRADO";
+  const renderMobileBlock = (title, blockItems, showCategory) => {
+    const { qtd, total } = sumTotals(blockItems);
+    const qtdLabel = showCategory
+      ? `${qtd.toLocaleString("pt-BR")} un`
+      : formatQuantidade(qtd, "Churrasco");
 
-              const statusBadge = isBought
-                ? `<span class="badge ok" role="button"
-                    data-action="toggle-status"
-                    data-id="${it.id}"
-                    data-next="PENDENTE">✔ Comprado</span>`
-                : `<span class="badge pending" role="button"
-                    data-action="toggle-status"
-                    data-id="${it.id}"
-                    data-next="COMPRADO">⏳ Pendente</span>`;
+    const header = `
+      <div class="card section only-mobile" style="margin-top:12px">
+        <div class="row space-between">
+          <h2>${title}</h2>
+          <div class="muted" style="font-size:12px">${blockItems.length} item(ns)</div>
+        </div>
+      </div>
+    `;
 
-              return `
-              <tr class="${isBought ? "row-bought" : ""}">
-                <td>
-                  <div style="font-weight:700">${it.nome}</div>
-                  <div class="muted" style="font-size:12px;margin-top:2px">
-                    ${it.categoria || "Geral"}
+    return `
+      ${header}
+      <div class="mobile-list" aria-label="Lista mobile ${title}">
+        ${blockItems
+          .map((it) => {
+            const totalItem =
+              Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+            const isBought = it.status === "COMPRADO";
+            const next = isBought ? "PENDENTE" : "COMPRADO";
+            const qtdDisplay = isChurrasco(it)
+              ? formatQuantidade(it.quantidade, it.categoria)
+              : `${Number(it.quantidade || 0).toLocaleString("pt-BR")} un`;
+
+            return `
+            <div class="mcard ${isBought ? "row-bought" : ""}">
+              <div class="mcard-inner">
+                <div class="mcard-header">
+                  <div class="mname">${it.nome}</div>
+                  <div class="mtotal">
+                    <div class="label">Total</div>
+                    <div class="value">${brl(totalItem)}</div>
                   </div>
-                </td>
+                </div>
 
-                <!-- Quantidade -->
-                <td style="min-width:140px">
-                  <div class="editing-cell">
-                    <span data-view>${it.quantidade}</span>
-                    <button
-                      class="icon-btn"
-                      title="Editar quantidade"
-                      data-action="edit-cell"
-                      data-field="quantidade"
-                      data-id="${it.id}"
-                    >✏️</button>
+                <div class="mmeta">
+                  ${showCategory ? `<span>${it.categoria || "Geral"}</span>` : ""}
+                  <span>Por: <b>${collabName(it)}</b></span>
+                </div>
+
+                <div class="mrow">
+                  <div class="mrow-labels">
+                    <div class="mfield-label">Preço (unit)</div>
+                    <div class="mfield-label">Quantidade</div>
                   </div>
-                </td>
-
-                <!-- Valor Unitário -->
-                <td style="min-width:180px">
-                  <div class="editing-cell">
-                    <span data-view>${brl(it.valor_unitario)}</span>
-                    <button
-                      class="icon-btn"
-                      title="Editar valor unitário"
-                      data-action="edit-cell"
-                      data-field="valor_unitario"
-                      data-id="${it.id}"
-                    >✏️</button>
+                  <div class="mrow-values">
+                    <div class="pill">
+                      <div class="pvalue">${brl(it.valor_unitario)}</div>
+                    </div>
+                    <div class="pill qtybox">
+                      <div class="pvalue">${qtdDisplay}</div>
+                    </div>
                   </div>
-                </td>
+                </div>
 
-                <!-- Total -->
-                <td><b>${brl(total)}</b></td>
+                <div class="mactions-inline">
+                  <button class="icon-btn-action ${isBought ? "active" : ""}" title="Marcar" data-action="toggle-status" data-id="${it.id}" data-next="${next}">
+                    ${isBought ? "↩️" : "✔️"}
+                  </button>
+                  <button class="icon-btn-action" title="Editar" data-action="edit" data-id="${it.id}">✏️</button>
+                  <button class="icon-btn-action danger" title="Excluir" data-action="delete" data-id="${it.id}">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `;
+          })
+          .join("")}
 
-                <!-- Status -->
-                <td>${statusBadge}</td>
+        <div class="mcard summary">
+          <div class="mcard-inner">
+            <div class="mcard-header">
+              <div class="mname">Resumo</div>
+              <div class="mtotal">
+                <div class="label">Total</div>
+                <div class="value">${brl(total)}</div>
+              </div>
+            </div>
+            <div class="mmeta">
+              <span>Qtd: <b>${qtdLabel}</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  };
 
-                <!-- Colaborador -->
-                <td>${it.criado_por_nome || "—"}</td>
-
-                <!-- Ações -->
-                <td>
-                  <div class="row" style="gap:6px">
-                    <button class="btn small" data-action="edit" data-id="${it.id}">
-                      Editar
-                    </button>
-                    <button class="btn small danger" data-action="delete" data-id="${it.id}">
-                      Excluir
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            `;
-            })
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  return `
+    ${renderMobileBlock("Lista de Compras", others, true)}
+    ${renderMobileBlock("Churrasco", churrasco, false)}
   `;
 }

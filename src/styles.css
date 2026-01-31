@@ -91,6 +91,14 @@ h3{ font-size: 14px; }
   min-width: 180px;
 }
 .input::placeholder{ color: var(--muted); }
+select option{
+  background: var(--card);
+  color: var(--text);
+}
+[data-theme="light"] select option{
+  background: #ffffff;
+  color: #111827;
+}
 
 .grid{
   display:grid;
@@ -216,6 +224,15 @@ table .input{
   min-width: 860px;
 }
 
+.collaborators-table-wrap{
+  width: 100%;
+  overflow: auto;
+}
+
+.collaborators-table-wrap table{
+  min-width: 860px;
+}
+
 table th, table td{
   padding: 8px 10px;          /* menos espaçamento */
   font-size: 13px;
@@ -227,6 +244,52 @@ table tbody tr:hover{
 }
 [data-theme="light"] table tbody tr:hover{
   background: rgba(17,24,39,.04);
+}
+
+/* Mobile: esconde tabela de colaboradores, mostra cards */
+.collaborators-mobile{
+  display: none;
+}
+
+@media (max-width: 768px){
+  .collaborators-table-wrap{
+    display: none;
+  }
+  .collaborators-mobile{
+    display: grid;
+    gap: 12px;
+  }
+  .collab-card{
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  [data-theme="light"] .collab-card{
+    background: rgba(17,24,39,.03);
+  }
+  .collab-name{
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .collab-stats{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .collab-stat{
+    text-align: center;
+  }
+  .stat-label{
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .stat-value{
+    font-weight: 700;
+    font-size: 13px;
+  }
 }
 
 /* inputs inline compactos */
@@ -284,6 +347,17 @@ tr.row-bought td{
   text-decoration: line-through;
 }
 
+tr.row-summary td{
+  border-top: 1px dashed var(--border);
+  font-weight: 700;
+}
+
+.qty-sub{
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 /* mantém botões/ícones legíveis mesmo riscado */
 tr.row-bought .btn,
 tr.row-bought .icon-btn,
@@ -291,3 +365,321 @@ tr.row-bought .badge{
   text-decoration: none;
   opacity: 1;
 }
+
+
+/* ====== MOBILE: layout tipo app de compras (cards) ====== */
+.mobile-list{ display:none; } /* desktop esconde */
+.only-mobile{ display:none; }
+@media (max-width: 768px){
+ .table-wrap{ display:none; }
+ .mobile-list{ display:grid; gap:12px; margin-top:10px; }
+ .only-mobile{ display:block; }
+ .mcard{
+   background: var(--card);
+   border: 1px solid var(--border);
+   border-radius: 16px;
+   overflow: hidden;
+ }
+ .mcard.summary{
+   border-style: dashed;
+   opacity: .95;
+ }
+ .mcard-inner{ padding: 12px; }
+ .mcard-header{
+   display: flex;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: 6px;
+   margin-bottom: 2px;
+ }
+ .mcard-top{
+   display:flex;
+   align-items:flex-start;
+   justify-content: space-between;
+   gap: 10px;
+ }
+ .mname{
+   font-weight: 800;
+   font-size: 15px;
+   line-height: 1.2;
+   flex: 1;
+ }
+ .mmeta{
+   margin-top: 4px;
+   font-size: 12px;
+   color: var(--muted);
+   display:flex;
+   flex-wrap: wrap;
+   gap: 8px;
+ }
+ .mtotal{
+   text-align:right;
+   min-width: 65px;
+ }
+ .mtotal .label{
+   font-size: 10px;
+   color: var(--muted);
+   line-height: 1;
+ }
+ .mtotal .value{
+   font-size: 13px;
+   font-weight: 900;
+   line-height: 1;
+ }
+ .mrow{
+   margin-top: 1px;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+ }
+ .mrow-labels{
+   display: flex;
+   gap: 33px;
+   margin-bottom: 0px;
+ }
+ .mfield-label{
+   font-size: 10px;
+   color: var(--muted);
+   font-weight: 600;
+   line-height: 1;
+ }
+ .mrow-values{
+   display: flex;
+   align-items: center;
+   gap: 16px;
+ }
+ .mfield{
+   flex: 0 0 auto;
+ }
+ .mfield .flabel{
+   font-size: 10px;
+   color: var(--muted);
+   margin-bottom: 4px;
+ }
+ .price-edit-wrapper{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   padding: 6px;
+   border-radius: 8px;
+   transition: background 0.2s;
+ }
+ .price-edit-wrapper:hover{
+   background: rgba(255,255,255,.03);
+ }
+ [data-theme="light"] .price-edit-wrapper:hover{
+   background: rgba(17,24,39,.03);
+ }
+ .price-value{
+   font-weight: 700;
+   font-size: 12px;
+   white-space: nowrap;
+   flex: 1;
+ }
+ .price-edit-btn{
+   width: 24px;
+   height: 24px;
+   padding: 0;
+   border: none;
+   background: transparent;
+   color: var(--text);
+   font-size: 12px;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   opacity: 0;
+   transition: opacity 0.2s;
+ }
+ .price-edit-wrapper:hover .price-edit-btn{
+   opacity: 1;
+ }
+ .pill{
+   border: 1px solid var(--border);
+   border-radius: 10px;
+   padding: 6px 8px;
+   display:flex;
+   align-items:center;
+   justify-content: space-between;
+   gap: 6px;
+   background: rgba(255,255,255,.03);
+ }
+ [data-theme="light"] .pill{ background: rgba(17,24,39,.03); }
+ .pill .pvalue{
+   font-weight: 800;
+   font-size: 12px;
+   white-space: nowrap;
+ }
+ .qtybox{
+   display:flex;
+   align-items:center;
+   justify-content: space-between;
+   gap: 6px;
+ }
+ .qty-edit-wrapper{
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   padding: 6px;
+   border-radius: 8px;
+   transition: background 0.2s;
+ }
+ .qty-edit-wrapper:hover{
+   background: rgba(255,255,255,.03);
+ }
+ [data-theme="light"] .qty-edit-wrapper:hover{
+   background: rgba(17,24,39,.03);
+ }
+ .qtynum-simple{
+   font-weight: 700;
+   font-size: 12px;
+   text-align: center;
+   min-width: 28px;
+ }
+ .qty-controls{
+   display: flex;
+   gap: 4px;
+   opacity: 0;
+   transition: opacity 0.2s;
+ }
+ .qty-edit-wrapper:hover .qty-controls{
+   opacity: 1;
+ }
+ .qtybtn-compact{
+   width: 24px;
+   height: 24px;
+   padding: 0;
+   border: none;
+   background: transparent;
+   color: var(--text);
+   font-size: 12px;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 4px;
+   transition: background 0.2s;
+ }
+ .qtybtn-compact:hover{
+   background: rgba(34,197,94,.2);
+ }
+ .qtybtn-compact:active{ transform: scale(.95); }
+ .mactions{
+   margin-top: 12px;
+   display:grid;
+   grid-template-columns: 1fr 1fr 1fr;
+   gap: 10px;
+ }
+ .mactions-inline{
+   display: flex;
+   gap: 8px;
+   align-items: center;
+   flex-shrink: 0;
+ }
+ .mactions .btn{
+   width: 100%;
+   justify-content:center;
+ }
+ .icon-btn-action{
+   width: 32px;
+   height: 32px;
+   padding: 0;
+   border: 1px solid var(--border);
+   border-radius: 6px;
+   background: transparent;
+   color: var(--text);
+   font-size: 16px;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   transition: all 0.2s;
+ }
+ .icon-btn-action:hover{
+   background: rgba(34,197,94,.2);
+   border-color: var(--primary);
+ }
+ .icon-btn-action.danger:hover{
+   background: rgba(239,68,68,.2);
+   border-color: var(--danger);
+ }
+ .icon-btn-action.active{
+   background: rgba(34,197,94,.2);
+   border-color: var(--primary);
+   color: var(--primary);
+ }
+ /* comprado (verde claro) */
+ .mcard.row-bought{
+   border-color: rgba(34,197,94,.45);
+   background: rgba(34,197,94,.12);
+ }
+ .mcard.row-bought .mname,
+ .mcard.row-bought .mtotal .value{
+   text-decoration: line-through;
+ }
+}
+
+/* Desktop: mostra tabela / esconde lista */
+.mobile-list{ display:none; }
+/* Mobile: esconde tabela / mostra lista */
+@media (max-width: 768px){
+ .table-wrap{ display:none !important; }
+ .mobile-list{ display:grid !important; }
+}
+
+/* ===== Ajuste fino: Preço e Quantidade do mesmo tamanho ===== */
+/* pill base com altura fixa */
+.pill{
+  height: 56px;              /* força mesma altura */
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+ }
+ /* quantidade não pode crescer mais que o preço */
+ .pill.qtybox{
+  justify-content: space-between;
+ }
+ /* botões + / - menores */
+ .qtybtn{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 18px;
+ }
+ /* número central alinhado */
+ .qtynum{
+  min-width: 32px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+ }
+
+ @media (max-width: 768px){
+  /* campos Preço e Quantidade menores */
+  .pill{
+    height: 42px;          /* ↓ era 58 */
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+  /* valor do preço */
+  .pill .pvalue{
+    font-size: 14px;       /* ↓ era 15/16 */
+  }
+  /* botões + / - menores */
+  .qtybtn{
+    width: 32px;           /* ↓ era 40 */
+    height: 32px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+  /* número central */
+  .qtynum{
+    font-size: 16px;       /* ↓ era 18 */
+    min-width: 28px;
+  }
+  /* rótulos "Preço (unit)" / "Quantidade" mais discretos */
+  .mfield .flabel{
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+ }
