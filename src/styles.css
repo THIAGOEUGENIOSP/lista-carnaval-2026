@@ -464,12 +464,12 @@ tr.row-bought .badge{
    margin-top: 6px;
    display: flex;
    flex-direction: column;
-   gap: 4px;
+   gap: 6px;
  }
  .mrow-labels{
    display: grid;
    grid-template-columns: 70px 56px auto;
-   column-gap: 10px;
+   column-gap: 12px;
    margin-bottom: 0px;
  }
  .mfield-label{
@@ -484,7 +484,7 @@ tr.row-bought .badge{
  .mrow-values{
    display: grid;
    grid-template-columns: 70px 56px auto;
-   column-gap: 10px;
+   column-gap: 12px;
    align-items: center;
  }
  .mfield{
