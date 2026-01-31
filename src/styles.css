@@ -439,7 +439,7 @@ tr.row-bought .badge{
    flex: 1;
  }
  .mmeta{
-   margin-top: 4px;
+   margin-top: 6px;
    font-size: 12px;
    color: var(--muted);
    display:flex;
@@ -461,14 +461,15 @@ tr.row-bought .badge{
    line-height: 1;
  }
  .mrow{
-   margin-top: 1px;
+   margin-top: 6px;
    display: flex;
    flex-direction: column;
-   gap: 2px;
+   gap: 4px;
  }
  .mrow-labels{
-   display: flex;
-   gap: 33px;
+   display: grid;
+   grid-template-columns: 70px 56px auto;
+   column-gap: 10px;
    margin-bottom: 0px;
  }
  .mfield-label{
@@ -477,10 +478,14 @@ tr.row-bought .badge{
    font-weight: 600;
    line-height: 1;
  }
+ .mfield-actions-label{
+   text-align: right;
+ }
  .mrow-values{
-   display: flex;
+   display: grid;
+   grid-template-columns: 70px 56px auto;
+   column-gap: 10px;
    align-items: center;
-   gap: 16px;
  }
  .mfield{
    flex: 0 0 auto;
@@ -537,6 +542,9 @@ tr.row-bought .badge{
    justify-content: space-between;
    gap: 6px;
    background: rgba(255,255,255,.03);
+ }
+ .mrow-values .pill{
+   width: 100%;
  }
  [data-theme="light"] .pill{ background: rgba(17,24,39,.03); }
  .pill .pvalue{
@@ -609,6 +617,7 @@ tr.row-bought .badge{
    gap: 8px;
    align-items: center;
    flex-shrink: 0;
+   justify-content: flex-end;
  }
  .mactions .btn{
    width: 100%;
@@ -691,13 +700,13 @@ tr.row-bought .badge{
  @media (max-width: 768px){
   /* campos Preço e Quantidade menores */
   .pill{
-    height: 42px;          /* ↓ era 58 */
-    padding: 0 10px;
+    height: 32px;
+    padding: 0 8px;
     border-radius: 12px;
   }
   /* valor do preço */
   .pill .pvalue{
-    font-size: 14px;       /* ↓ era 15/16 */
+    font-size: 12px;
   }
   /* botões + / - menores */
   .qtybtn{
