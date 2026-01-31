@@ -450,6 +450,7 @@ function bindPerRenderInputs() {
           quantidade: 0,
           valor_unitario: num(fd.get("valor_unitario") || 0),
           categoria: String(fd.get("categoria") || "Geral").trim() || "Geral",
+          status: String(fd.get("status") || "PENDENTE"),
         };
 
         if (!payload.nome) {
@@ -505,7 +506,6 @@ function bindPerRenderInputs() {
           const created = normalizeItem(
             await addItem({
               ...payload,
-              status: "PENDENTE",
               periodo_id: state.currentPeriod.id,
               criado_por_nome: state.collaboratorName || "Colaborador",
             }),

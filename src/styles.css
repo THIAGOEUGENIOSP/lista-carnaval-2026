@@ -139,9 +139,16 @@ th{ color: var(--muted); font-weight: 600; }
   border-radius: 999px;
   border: 1px solid var(--border);
   font-size: 12px;
+  white-space: nowrap;
 }
 .badge.ok{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12); }
 .badge.pending{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+
+/* status badge clicável */
+.badge.ok[role="button"],
+.badge.pending[role="button"]{
+  cursor: pointer;
+}
 
 .hr{
   height:1px; background: var(--border); margin: 12px 0;
@@ -327,6 +334,24 @@ table tbody tr:hover{
   gap: 6px;
 }
 
+.actions-row{ flex-wrap: nowrap; }
+
+.item-name{
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.item-cell{
+  white-space: nowrap;
+  max-width: 260px;
+  overflow: hidden;
+}
+
+.status-cell{ min-width: 120px; }
+
 .cell-actions{
   display:flex;
   gap:6px;
@@ -370,10 +395,12 @@ tr.row-bought .badge{
 /* ====== MOBILE: layout tipo app de compras (cards) ====== */
 .mobile-list{ display:none; } /* desktop esconde */
 .only-mobile{ display:none; }
+.only-desktop{ display:block; }
 @media (max-width: 768px){
  .table-wrap{ display:none; }
  .mobile-list{ display:grid; gap:12px; margin-top:10px; }
  .only-mobile{ display:block; }
+ .only-desktop{ display:none; }
   /* iOS: evita zoom automático ao focar inputs */
   .input, select, textarea{
     font-size: 16px;
@@ -690,3 +717,10 @@ tr.row-bought .badge{
     margin-bottom: 6px;
   }
  }
+
+ .collab-name-cell{
+  white-space: nowrap;
+}
+.collab-name{
+  white-space: nowrap;
+}

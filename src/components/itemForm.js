@@ -53,6 +53,14 @@ export function renderItemFormModal() {
           <input class="input" name="valor_unitario" type="number" min="0" step="0.01" value="0" required />
         </div>
 
+        <div class="full">
+          <label class="muted" style="font-size:12px">Status</label>
+          <select name="status">
+            <option value="PENDENTE" selected>Pendente</option>
+            <option value="COMPRADO">Comprado</option>
+          </select>
+        </div>
+
         <div class="full row space-between" style="margin-top:8px">
           <div class="muted" style="font-size:12px" id="modalHint"></div>
           <div class="row">
@@ -114,6 +122,8 @@ export function openModal({ title, subtitle, hint, data }) {
   form.quantidade.placeholder = isChurrasco
     ? "Ex: 1kg ou 0.5g"
     : "Ex: 2 ou 2,5";
+
+  form.status.value = data?.status ?? "PENDENTE";
 
   form.nome.focus();
 }

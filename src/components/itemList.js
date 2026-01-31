@@ -79,7 +79,7 @@ function renderSummaryRow(items, forChurrasco) {
 
 function renderTableBlock({ title, items, showCategory }) {
   return `
-  <div class="card section" style="margin-top:12px">
+  <div class="card section only-desktop" style="margin-top:12px">
     <div class="row space-between">
       <h2>${title}</h2>
       <div class="muted" style="font-size:12px">${items.length} item(ns)</div>
@@ -122,8 +122,8 @@ function renderTableBlock({ title, items, showCategory }) {
 
               return `
               <tr class="${isBought ? "row-bought" : ""}">
-                <td>
-                  <div style="font-weight:700">${it.nome}</div>
+                <td class="item-cell">
+                  <div class="item-name">${it.nome}</div>
                   ${
                     showCategory
                       ? `<div class="muted" style="font-size:12px;margin-top:2px">
@@ -160,11 +160,11 @@ function renderTableBlock({ title, items, showCategory }) {
                 </td>
 
                 <td><b>${brl(total)}</b></td>
-                <td>${statusBadge}</td>
-                <td>${collabName(it)}</td>
+                <td class="status-cell">${statusBadge}</td>
+                <td class="collab-name-cell"><span class="collab-name">${collabName(it)}</span></td>
 
                 <td>
-                  <div class="row" style="gap:6px">
+                  <div class="row actions-row" style="gap:6px">
                     <button class="btn small" data-action="edit" data-id="${it.id}">Editar</button>
                     <button class="btn small danger" data-action="delete" data-id="${it.id}">Excluir</button>
                   </div>
