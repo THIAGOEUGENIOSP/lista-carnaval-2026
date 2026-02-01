@@ -374,10 +374,9 @@ function renderApp() {
           </div>
           ${renderItemMobileList(filtered, state.sortKey)}
         </div>
-        <div>
-          ${renderAnalytics()}
-        </div>
       </div>
+
+      ${renderAnalytics()}
 
       ${renderItemFormModal()}
     </div>
