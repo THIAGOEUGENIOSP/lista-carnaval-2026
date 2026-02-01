@@ -1,7 +1,13 @@
 // src/app.js
 import { sb } from "./config/supabase.js";
 import { getTheme, setTheme, qs, qsa } from "./utils/ui.js";
-import { num, formatQuantidade } from "./utils/format.js";
+import {
+  num,
+  formatQuantidade,
+  formatCurrencyBRL,
+  parseCurrencyBRL,
+  bindCurrencyInputs,
+} from "./utils/format.js";
 import { addMonths, monthKey, periodName } from "./utils/period.js";
 
 import { mountToast } from "./components/toast.js";
@@ -238,10 +244,14 @@ function rerenderListOnly() {
 }
 
 function rerenderTableOnly() {
-  const tableCard = document.querySelector(".table-wrap")?.parentElement;
-  if (!tableCard) return;
+  const tableBlock = document.querySelector("#desktopList");
+  if (!tableBlock) return;
   const filtered = applyFilters();
-  tableCard.outerHTML = renderItemTable(filtered, state.sortKey);
+  tableBlock.outerHTML = `
+    <div id="desktopList">
+      ${renderItemTable(filtered, state.sortKey)}
+    </div>
+  `;
 }
 
 async function saveMobileInlineEdit({ id, field, rawValue, item }) {
@@ -262,7 +272,7 @@ async function saveMobileInlineEdit({ id, field, rawValue, item }) {
     }
     patch.quantidade = qtdParsed.value;
   } else {
-    patch.valor_unitario = num(raw);
+    patch.valor_unitario = parseCurrencyBRL(raw);
   }
 
   const updated = normalizeItem(await updateItem(id, patch));
@@ -359,7 +369,9 @@ function renderApp() {
       <div class="grid main" style="margin-top:12px">
         <div>
           ${renderItemListControls(state)}
-          ${renderItemTable(filtered, state.sortKey)}
+          <div id="desktopList">
+            ${renderItemTable(filtered, state.sortKey)}
+          </div>
           ${renderItemMobileList(filtered, state.sortKey)}
         </div>
         <div>
@@ -477,7 +489,7 @@ function bindPerRenderInputs() {
         const payload = {
           nome: String(fd.get("nome") || "").trim(),
           quantidade: 0,
-          valor_unitario: num(fd.get("valor_unitario") || 0),
+          valor_unitario: parseCurrencyBRL(fd.get("valor_unitario") || ""),
           categoria: String(fd.get("categoria") || "Geral").trim() || "Geral",
           status: String(fd.get("status") || "PENDENTE"),
         };
@@ -553,6 +565,8 @@ function bindPerRenderInputs() {
       }
     });
   }
+
+  bindCurrencyInputs(document);
 
   const backdrop = qs("#modalBackdrop");
   if (backdrop) {
@@ -660,23 +674,60 @@ function bindDelegatedEvents() {
         const currentValue =
           field === "quantidade"
             ? formatQuantidade(it.quantidade ?? 0, it.categoria)
-            : num(it.valor_unitario || 0);
+            : formatCurrencyBRL(num(it.valor_unitario || 0));
 
         cell.innerHTML = `
           <input
             class="input cell-input"
             type="text"
             inputmode="decimal"
+            ${field === "valor_unitario" ? 'data-currency="brl"' : ""}
             placeholder="${field === "quantidade" ? "Ex: 1kg ou 0.5g" : "0,00"}"
             value="${currentValue}"
           />
-          <div class="cell-actions">
-            <button class="btn small primary" data-action="save-cell" data-id="${id}" data-field="${field}">Salvar</button>
-            <button class="btn small" data-action="cancel-cell">Cancelar</button>
-          </div>
         `;
 
         const inp = cell.querySelector("input");
+        if (!inp) return;
+        if (field === "valor_unitario") {
+          bindCurrencyInputs(cell);
+        }
+
+        const commit = async () => {
+          if (inp.dataset.saving === "1") return;
+          inp.dataset.saving = "1";
+          try {
+            const ok = await saveMobileInlineEdit({
+              id,
+              field,
+              rawValue: inp.value,
+              item: it,
+            });
+            if (!ok) {
+              rerenderTableOnly();
+              return;
+            }
+            toast.show({ title: "Salvo", message: "Atualizado com sucesso." });
+            rerenderTableOnly();
+          } catch (err) {
+            toast.show({
+              title: "Erro",
+              message: err.message || "Falha ao salvar.",
+            });
+            rerenderTableOnly();
+          }
+        };
+
+        inp.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            inp.blur();
+          }
+        });
+        inp.addEventListener("blur", () => {
+          void commit();
+        });
+
         inp.focus();
         inp.select();
         return;
@@ -695,7 +746,7 @@ function bindDelegatedEvents() {
         const currentValue =
           field === "quantidade"
             ? formatQuantidade(it.quantidade ?? 0, it.categoria)
-            : String(num(it.valor_unitario || 0));
+            : formatCurrencyBRL(num(it.valor_unitario || 0));
 
         const placeholder =
           field === "quantidade" ? "Ex: 1kg ou 0.5g" : "0,00";
@@ -704,6 +755,7 @@ function bindDelegatedEvents() {
           <input
             type="text"
             inputmode="decimal"
+            data-currency="brl"
             placeholder="${placeholder}"
             value="${currentValue}"
           />
@@ -711,6 +763,7 @@ function bindDelegatedEvents() {
 
         const input = pill.querySelector("input");
         if (!input) return;
+        bindCurrencyInputs(pill);
 
         const commit = async () => {
           if (input.dataset.saving === "1") return;

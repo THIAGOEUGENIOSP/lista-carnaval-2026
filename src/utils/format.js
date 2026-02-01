@@ -8,6 +8,54 @@ export function num(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
+export function formatCurrencyBRL(value) {
+  const n = Number(value || 0);
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+export function parseCurrencyBRL(raw) {
+  const txt = String(raw ?? "").trim();
+  if (!txt) return 0;
+  const digits = txt.replace(/\D/g, "");
+  if (!digits) return 0;
+  const cents = Number(digits);
+  if (!Number.isFinite(cents)) return 0;
+  return cents / 100;
+}
+
+export function bindCurrencyInputs(root) {
+  const scope = root || document;
+  const inputs = scope.querySelectorAll('[data-currency="brl"]');
+
+  inputs.forEach((input) => {
+    if (input.dataset.currencyBound === "1") return;
+    input.dataset.currencyBound = "1";
+
+    const normalize = () => {
+      const value = parseCurrencyBRL(input.value);
+      input.value = formatCurrencyBRL(value);
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
+    };
+
+    input.addEventListener("focus", () => {
+      if (!String(input.value || "").trim()) {
+        input.value = formatCurrencyBRL(0);
+      }
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
+    });
+
+    input.addEventListener("input", () => {
+      normalize();
+    });
+
+    if (String(input.value || "").trim()) {
+      normalize();
+    }
+  });
+}
+
 export function formatQuantidade(kgValue, categoria) {
   const n = Number(kgValue || 0);
   const cat = String(categoria || "").trim().toLowerCase();

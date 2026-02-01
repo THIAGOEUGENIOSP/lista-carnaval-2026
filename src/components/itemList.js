@@ -139,27 +139,25 @@ function renderTableBlock({ title, items, showCategory }) {
 
                 <td style="min-width:140px">
                   <div class="editing-cell">
-                    <span data-view>${qtdDisplay}</span>
-                    <button
-                      class="icon-btn"
-                      title="Editar quantidade"
+                    <span
+                      data-view
+                      role="button"
                       data-action="edit-cell"
                       data-field="quantidade"
                       data-id="${it.id}"
-                    >✏️</button>
+                    >${qtdDisplay}</span>
                   </div>
                 </td>
 
                 <td style="min-width:180px">
                   <div class="editing-cell">
-                    <span data-view>${brl(it.valor_unitario)}</span>
-                    <button
-                      class="icon-btn"
-                      title="Editar valor unitário"
+                    <span
+                      data-view
+                      role="button"
                       data-action="edit-cell"
                       data-field="valor_unitario"
                       data-id="${it.id}"
-                    >✏️</button>
+                    >${brl(it.valor_unitario)}</span>
                   </div>
                 </td>
 

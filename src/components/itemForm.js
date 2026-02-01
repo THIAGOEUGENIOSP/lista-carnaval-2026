@@ -1,4 +1,4 @@
-import { formatQuantidade } from "../utils/format.js";
+import { formatQuantidade, formatCurrencyBRL } from "../utils/format.js";
 
 export function renderItemFormModal() {
   return `
@@ -50,7 +50,15 @@ export function renderItemFormModal() {
 
         <div>
           <label class="muted" style="font-size:12px">Valor unitário (R$)</label>
-          <input class="input" name="valor_unitario" type="number" min="0" step="0.01" value="0" required />
+          <input
+            class="input"
+            name="valor_unitario"
+            type="text"
+            inputmode="decimal"
+            data-currency="brl"
+            value="${formatCurrencyBRL(0)}"
+            required
+          />
         </div>
 
         <div class="full">
@@ -104,7 +112,7 @@ export function openModal({ title, subtitle, hint, data }) {
       data.quantidade ?? 1,
       data.categoria,
     );
-    form.valor_unitario.value = data.valor_unitario ?? 0;
+    form.valor_unitario.value = formatCurrencyBRL(data.valor_unitario ?? 0);
 
     ensureOption(form.categoria, data.categoria);
     form.categoria.value = data.categoria ?? "Geral";
@@ -116,6 +124,7 @@ export function openModal({ title, subtitle, hint, data }) {
     form.tipo.value = "UNIDADE";
     form.id.value = "";
     form.quantidade.value = "";
+    form.valor_unitario.value = formatCurrencyBRL(0);
   }
 
   const isChurrasco = form.categoria.value === "Churrasco";
