@@ -754,7 +754,7 @@ function bindDelegatedEvents() {
           <input
             type="text"
             inputmode="decimal"
-            data-currency="brl"
+            ${field === "valor_unitario" ? 'data-currency="brl"' : ""}
             placeholder="${placeholder}"
             value="${currentValue}"
           />
@@ -762,7 +762,9 @@ function bindDelegatedEvents() {
 
         const input = pill.querySelector("input");
         if (!input) return;
-        bindCurrencyInputs(pill);
+        if (field === "valor_unitario") {
+          bindCurrencyInputs(pill);
+        }
 
         const commit = async () => {
           if (input.dataset.saving === "1") return;
