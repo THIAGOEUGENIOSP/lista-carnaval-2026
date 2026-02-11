@@ -392,11 +392,28 @@ table tbody tr:hover{
 
 /* Linha grifada quando COMPRADO */
 tr.row-bought{
-  opacity: .65;
+  opacity: 1;
+  background: rgba(34,197,94,.12);
+  box-shadow: inset 0 0 0 2px rgba(34,197,94,.45);
+}
+
+[data-theme="light"] tr.row-bought{
+  background: rgba(34,197,94,.14);
+  box-shadow: inset 0 0 0 2px rgba(22,163,74,.35);
 }
 
 tr.row-bought td{
   text-decoration: line-through;
+}
+
+tr.row-pending{
+  background: rgba(255,255,255,.07);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.32);
+}
+
+[data-theme="light"] tr.row-pending{
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(17,24,39,.18);
 }
 
 tr.row-summary td{

@@ -125,7 +125,7 @@ function renderTableBlock({ title, items, showCategory }) {
                 : it.quantidade;
 
               return `
-              <tr class="${isBought ? "row-bought" : ""}">
+              <tr class="${isBought ? "row-bought" : "row-pending"}">
                 <td class="item-cell">
                   <div class="item-name">${it.nome}</div>
                 </td>
