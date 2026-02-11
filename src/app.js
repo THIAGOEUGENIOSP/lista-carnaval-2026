@@ -237,10 +237,14 @@ function applyFilters() {
 }
 
 function rerenderListOnly() {
-  const list = document.querySelector(".mobile-list");
+  const list = document.querySelector("#mobileLists");
   if (!list) return;
   const filtered = applyFilters();
-  list.outerHTML = renderItemMobileList(filtered, state.sortKey);
+  list.outerHTML = `
+    <div id="mobileLists">
+      ${renderItemMobileList(filtered, state.sortKey)}
+    </div>
+  `;
 }
 
 function rerenderTableOnly() {
@@ -372,7 +376,9 @@ function renderApp() {
           <div id="desktopList">
             ${renderItemTable(filtered, state.sortKey)}
           </div>
-          ${renderItemMobileList(filtered, state.sortKey)}
+          <div id="mobileLists">
+            ${renderItemMobileList(filtered, state.sortKey)}
+          </div>
         </div>
       </div>
 
