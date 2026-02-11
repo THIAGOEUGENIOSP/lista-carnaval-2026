@@ -61,6 +61,7 @@ const state = {
   items: [],
 
   filterStatus: "ALL",
+  filterCollaborator: "ALL",
   searchText: "",
   sortKey: "name_asc",
 
@@ -210,6 +211,12 @@ function applyFilters() {
 
   if (state.filterStatus !== "ALL") {
     arr = arr.filter((it) => it.status === state.filterStatus);
+  }
+
+  if (state.filterCollaborator !== "ALL") {
+    arr = arr.filter(
+      (it) => getCollaboratorName(it) === state.filterCollaborator,
+    );
   }
 
   const q = (state.searchText || "").trim().toLowerCase();
@@ -372,7 +379,7 @@ function renderApp() {
 
       <div class="grid main" style="margin-top:12px">
         <div>
-          ${renderItemListControls(state)}
+          ${renderItemListControls(state, state.items)}
           <div id="desktopList">
             ${renderItemTable(filtered, state.sortKey)}
           </div>
@@ -568,6 +575,16 @@ function bindPerRenderInputs() {
           message: err.message || "Falha ao salvar item.",
         });
       }
+    });
+  }
+
+  // colaborador
+  const collaboratorFilter = qs("#collaboratorFilter");
+  if (collaboratorFilter) {
+    collaboratorFilter.addEventListener("change", () => {
+      state.filterCollaborator = collaboratorFilter.value;
+      rerenderTableOnly();
+      rerenderListOnly();
     });
   }
 

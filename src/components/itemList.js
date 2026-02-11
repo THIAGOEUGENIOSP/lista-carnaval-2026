@@ -176,7 +176,25 @@ function renderTableBlock({ title, items, showCategory }) {
   `;
 }
 
-export function renderItemListControls(state) {
+export function renderItemListControls(state, items = []) {
+  const collaborators = Array.from(
+    new Set(items.map((it) => collabName(it)).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+
+  if (
+    state.filterCollaborator !== "ALL" &&
+    !collaborators.includes(state.filterCollaborator)
+  ) {
+    collaborators.unshift(state.filterCollaborator);
+  }
+
+  const collaboratorOptions = collaborators
+    .map(
+      (name) =>
+        `<option value="${name}" ${state.filterCollaborator === name ? "selected" : ""}>${name}</option>`,
+    )
+    .join("");
+
   return `
   <div class="card section">
     <div class="row space-between">
@@ -191,6 +209,11 @@ export function renderItemListControls(state) {
       </div>
 
       <div class="row">
+        <select id="collaboratorFilter">
+          <option value="ALL" ${state.filterCollaborator === "ALL" ? "selected" : ""}>Todos usuários</option>
+          ${collaboratorOptions}
+        </select>
+
         <input
           class="input"
           id="searchInput"
