@@ -38,8 +38,11 @@ import {
   deleteItem,
   bulkZeroPrices,
   bulkDeleteByPeriod,
+  restoreDeletedByPeriod,
+  countDeletedByPeriod,
   copyItemsToPeriod,
 } from "./services/items.js";
+import { logAudit } from "./services/audit.js";
 
 const root = document.getElementById("app");
 const toast = mountToast(document.body);
@@ -59,6 +62,7 @@ const state = {
 
   currentPeriod: null,
   items: [],
+  deletedCount: 0,
 
   filterStatus: "ALL",
   filterCollaborator: "ALL",
@@ -68,6 +72,20 @@ const state = {
   charts: null,
   delegatedBound: false,
 };
+
+const DELETE_LIST_PIN = "2026";
+let analyticsSoftDeleteAvailable = true;
+
+function formatErrorMessage(err) {
+  if (!err) return "Erro desconhecido";
+  if (typeof err === "string") return err;
+  if (err.message) return err.message;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
 
 function saveCursor() {
   localStorage.setItem("cursorMonth", monthKey(state.cursorDate));
@@ -331,6 +349,7 @@ async function loadDataForPeriod() {
   state.currentPeriod = await ensurePeriod(state.cursorDate);
   const raw = await fetchItems(state.currentPeriod.id);
   state.items = (raw || []).map(normalizeItem);
+  state.deletedCount = await countDeletedByPeriod(state.currentPeriod.id);
 }
 
 async function computeMonthlySeries() {
@@ -341,10 +360,32 @@ async function computeMonthlySeries() {
   const last = sorted.slice(-6);
   const ids = last.map((p) => p.id);
 
-  const res = await sb
-    .from("items")
-    .select("periodo_id,quantidade,valor_unitario")
-    .in("periodo_id", ids);
+  let res;
+  if (analyticsSoftDeleteAvailable) {
+    res = await sb
+      .from("items")
+      .select("periodo_id,quantidade,valor_unitario")
+      .in("periodo_id", ids)
+      .is("deleted_at", null);
+  } else {
+    res = await sb
+      .from("items")
+      .select("periodo_id,quantidade,valor_unitario")
+      .in("periodo_id", ids);
+  }
+
+  const maybeMissingDeletedAt = String(res?.error?.message || "")
+    .toLowerCase()
+    .includes("deleted_at");
+  if (res.error && maybeMissingDeletedAt) {
+    analyticsSoftDeleteAvailable = false;
+    res = await sb
+      .from("items")
+      .select("periodo_id,quantidade,valor_unitario")
+      .in("periodo_id", ids);
+  } else if (!res.error) {
+    analyticsSoftDeleteAvailable = true;
+  }
 
   if (res.error) throw res.error;
 
@@ -370,7 +411,12 @@ function renderApp() {
 
   root.innerHTML = `
     <div class="container">
-      ${renderHeader({ periodLabel, userName, theme: state.theme })}
+      ${renderHeader({
+        periodLabel,
+        userName,
+        theme: state.theme,
+        deletedCount: state.deletedCount,
+      })}
 
       <div style="margin-top:12px">
         ${renderDashboard(kpis)}
@@ -665,8 +711,16 @@ function bindDelegatedEvents() {
         const id = el.dataset.id;
         if (!confirm("Excluir este item?")) return;
 
-        await deleteItem(id);
+        await deleteItem(id, state.collaboratorName);
+        await logAudit({
+          action: "SOFT_DELETE_ITEM",
+          collaboratorName: state.collaboratorName,
+          periodId: state.currentPeriod.id,
+          itemId: id,
+          details: { month: state.currentPeriod.nome },
+        });
         state.items = state.items.filter((x) => x.id !== id);
+        state.deletedCount += 1;
         toast.show({ title: "Excluído", message: "Item removido." });
         renderApp();
         return;
@@ -877,6 +931,12 @@ function bindDelegatedEvents() {
         if (!confirm(`Zerar preços de ${state.currentPeriod.nome}?`)) return;
 
         await bulkZeroPrices(state.currentPeriod.id);
+        await logAudit({
+          action: "BULK_ZERO_PRICES",
+          collaboratorName: state.collaboratorName,
+          periodId: state.currentPeriod.id,
+          details: { month: state.currentPeriod.nome, total_items: state.items.length },
+        });
         state.items = state.items.map((it) =>
           normalizeItem({ ...it, valor_unitario: 0 }),
         );
@@ -886,12 +946,54 @@ function bindDelegatedEvents() {
       }
 
       if (action === "delete-month") {
-        if (!confirm(`Apagar TODOS os itens de ${state.currentPeriod.nome}?`))
+        const confirmText = `APAGAR ${state.currentPeriod.nome}`;
+        const typedText = prompt(
+          `Confirmação de segurança:\nDigite exatamente "${confirmText}" para mover para lixeira.`,
+        );
+        if (typedText !== confirmText) {
+          toast.show({
+            title: "Cancelado",
+            message: "Confirmação de texto inválida.",
+          });
+          return;
+        }
+
+        const typedPin = prompt("Digite o PIN de admin para continuar:");
+        if (typedPin !== DELETE_LIST_PIN) {
+          toast.show({
+            title: "Bloqueado",
+            message: "PIN inválido. Operação não executada.",
+          });
+          return;
+        }
+
+        const affected = state.items.length;
+        await bulkDeleteByPeriod(state.currentPeriod.id, state.collaboratorName);
+        await logAudit({
+          action: "SOFT_DELETE_MONTH",
+          collaboratorName: state.collaboratorName,
+          periodId: state.currentPeriod.id,
+          details: { month: state.currentPeriod.nome, affected },
+        });
+        await loadDataForPeriod();
+        toast.show({ title: "Ok", message: "Lista movida para lixeira." });
+        renderApp();
+        return;
+      }
+
+      if (action === "restore-month") {
+        if (!confirm(`Restaurar itens da lixeira de ${state.currentPeriod.nome}?`))
           return;
 
-        await bulkDeleteByPeriod(state.currentPeriod.id);
-        state.items = [];
-        toast.show({ title: "Ok", message: "Lista do mês apagada." });
+        await restoreDeletedByPeriod(state.currentPeriod.id);
+        await logAudit({
+          action: "RESTORE_MONTH",
+          collaboratorName: state.collaboratorName,
+          periodId: state.currentPeriod.id,
+          details: { month: state.currentPeriod.nome },
+        });
+        await loadDataForPeriod();
+        toast.show({ title: "Ok", message: "Lista do mês restaurada." });
         renderApp();
         return;
       }
@@ -937,6 +1039,6 @@ async function boot() {
 
 boot().catch((err) => {
   root.innerHTML = `<div class="container"><div class="card section">
-    <h1>Erro ao iniciar</h1><div class="muted" style="margin-top:8px">${err.message || err}</div>
+    <h1>Erro ao iniciar</h1><div class="muted" style="margin-top:8px">${formatErrorMessage(err)}</div>
   </div></div>`;
 });
