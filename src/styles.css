@@ -883,6 +883,10 @@ tr.row-bought .badge{
   border-radius: 9px;
   font-size: 11px;
   line-height: 1;
+  border: 1px solid var(--cat-pending-border);
+  border-left-width: 3px;
+  border-left-color: var(--cat-accent);
+  background: linear-gradient(180deg, var(--cat-head-bg), var(--card) 80%);
 }
 
 .category-shortcuts{
@@ -899,10 +903,10 @@ tr.row-bought .badge{
   --cat-pending-border: rgba(156,163,175,.25);
   width: 100%;
   max-width: 100%;
-  border: 1px solid var(--cat-pending-border);
-  border-left-width: 3px;
+  border: 2px solid var(--border);
+  border-left-width: 4px;
   border-left-color: var(--cat-accent);
-  background: linear-gradient(180deg, var(--cat-head-bg), rgba(255,255,255,0) 75%);
+  background: linear-gradient(180deg, var(--cat-head-bg), var(--card) 42%);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -912,6 +916,79 @@ tr.row-bought .badge{
   border-radius: 10px;
   font-size: 11px;
   line-height: 1;
+  color: var(--text);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.category-shortcuts .category-shortcut:hover{
+  background: linear-gradient(180deg, var(--cat-head-bg), var(--card) 42%) !important;
+  border-color: var(--border);
+  transform: none;
+}
+
+/* Força visual dos atalhos por categoria (evita aparência cinza) */
+.category-shortcuts .category-shortcut.cat-clean{
+  background: linear-gradient(180deg, rgba(34,197,94,.22), var(--card) 50%) !important;
+  border-left-color: #22c55e !important;
+}
+.category-shortcuts .category-shortcut.cat-bakery{
+  background: linear-gradient(180deg, rgba(245,158,11,.24), var(--card) 50%) !important;
+  border-left-color: #f59e0b !important;
+}
+.category-shortcuts .category-shortcut.cat-produce{
+  background: linear-gradient(180deg, rgba(132,204,22,.24), var(--card) 50%) !important;
+  border-left-color: #84cc16 !important;
+}
+.category-shortcuts .category-shortcut.cat-drinks{
+  background: linear-gradient(180deg, rgba(56,189,248,.24), var(--card) 50%) !important;
+  border-left-color: #38bdf8 !important;
+}
+.category-shortcuts .category-shortcut.cat-grocery{
+  background: linear-gradient(180deg, rgba(167,139,250,.26), var(--card) 50%) !important;
+  border-left-color: #a78bfa !important;
+}
+.category-shortcuts .category-shortcut.cat-protein{
+  background: linear-gradient(180deg, rgba(249,115,22,.24), var(--card) 50%) !important;
+  border-left-color: #f97316 !important;
+}
+.category-shortcuts .category-shortcut.cat-general{
+  background: linear-gradient(180deg, rgba(156,163,175,.24), var(--card) 50%) !important;
+  border-left-color: #9ca3af !important;
+}
+.category-shortcuts .category-shortcut.cat-churrasco{
+  background: linear-gradient(180deg, rgba(239,68,68,.24), var(--card) 50%) !important;
+  border-left-color: #ef4444 !important;
+}
+
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-clean{
+  background: linear-gradient(180deg, rgba(34,197,94,.16), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-bakery{
+  background: linear-gradient(180deg, rgba(245,158,11,.18), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-produce{
+  background: linear-gradient(180deg, rgba(132,204,22,.18), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-drinks{
+  background: linear-gradient(180deg, rgba(56,189,248,.18), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-grocery{
+  background: linear-gradient(180deg, rgba(167,139,250,.20), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-protein{
+  background: linear-gradient(180deg, rgba(249,115,22,.18), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-general{
+  background: linear-gradient(180deg, rgba(156,163,175,.18), #ffffff 56%) !important;
+}
+[data-theme="light"] .category-shortcuts .category-shortcut.cat-churrasco{
+  background: linear-gradient(180deg, rgba(239,68,68,.18), #ffffff 56%) !important;
+}
+
+.category-shortcuts a.category-shortcut{
+  display: flex;
+  align-items: center;
 }
 
 .category-shortcuts .category-shortcut .cat-dot{
