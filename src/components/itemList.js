@@ -323,6 +323,9 @@ export function renderItemMobileList(items, sortKey) {
                   <div class="mtotal">
                     <div class="label">Total</div>
                     <div class="value">${brl(totalItem)}</div>
+                    <div class="mstatus ${isBought ? "bought" : "pending"}">
+                      ${isBought ? "Comprado" : "Pendente"}
+                    </div>
                   </div>
                 </div>
 
