@@ -509,21 +509,18 @@ tr.row-bought .badge{
    color: #fbbf24;
  }
  .mstatus.bought{
-   background: rgba(34,197,94,.14);
-   border-color: rgba(34,197,94,.38);
-   color: #86efac;
+   background: var(--cat-bought-bg);
+   border-color: var(--cat-bought-border);
+   color: var(--text);
  }
  [data-theme="light"] .mstatus.pending{
    color: #92400e;
  }
- [data-theme="light"] .mstatus.bought{
-   color: #166534;
- }
  .mtotal{
    text-align:right;
-   min-width: 65px;
+   min-width: 88px;
    position: relative;
-   padding-bottom: 20px;
+   padding-bottom: 16px;
  }
  .mtotal .label{
    font-size: 10px;
@@ -820,208 +817,246 @@ tr.row-bought .badge{
 }
 
 .category-block{
-  border-left-width: 5px;
+  --cat-accent: rgba(156,163,175,.9);
+  --cat-head-bg: rgba(156,163,175,.10);
+  --cat-pending-bg: rgba(156,163,175,.08);
+  --cat-pending-border: rgba(156,163,175,.25);
+  --cat-bought-bg: rgba(156,163,175,.20);
+  --cat-bought-border: rgba(156,163,175,.60);
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  border-left-width: 4px;
+  border-left-color: var(--cat-accent);
 }
 
-.cat-icon{
+.category-pill-head{
+  padding: 10px 12px;
+  background: linear-gradient(180deg, var(--cat-head-bg), var(--card) 42%);
+  scroll-margin-top: 10px;
+}
+
+.category-head{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-head-sub{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.category-title-wrap{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cat-dot{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cat-title{
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.cat-count{
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.category-top-btn{
+  padding: 4px 8px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.category-shortcuts{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.category-shortcuts .category-shortcut{
+  --cat-accent: rgba(156,163,175,.9);
+  --cat-head-bg: rgba(156,163,175,.10);
+  --cat-pending-border: rgba(156,163,175,.25);
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--cat-pending-border);
+  border-left-width: 3px;
+  border-left-color: var(--cat-accent);
+  background: linear-gradient(180deg, var(--cat-head-bg), rgba(255,255,255,0) 75%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.category-shortcuts .category-shortcut .cat-dot{
+  width: auto;
+  min-width: 0;
+  height: auto;
+  font-size: 11px;
+}
+
+.cat-shortcut-label{
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+@media (max-width: 768px){
+  .category-shortcuts{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 .cat-clean{
-  border-left-color: #22c55e;
-  background: linear-gradient(180deg, rgba(34,197,94,.08), transparent 35%);
+  --cat-accent: #22c55e;
+  --cat-head-bg: rgba(34,197,94,.10);
+  --cat-pending-bg: rgba(34,197,94,.08);
+  --cat-pending-border: rgba(34,197,94,.28);
+  --cat-bought-bg: rgba(34,197,94,.20);
+  --cat-bought-border: rgba(34,197,94,.60);
 }
 .cat-bakery{
-  border-left-color: #f59e0b;
-  background: linear-gradient(180deg, rgba(245,158,11,.10), transparent 35%);
+  --cat-accent: #f59e0b;
+  --cat-head-bg: rgba(245,158,11,.11);
+  --cat-pending-bg: rgba(245,158,11,.08);
+  --cat-pending-border: rgba(245,158,11,.28);
+  --cat-bought-bg: rgba(245,158,11,.20);
+  --cat-bought-border: rgba(245,158,11,.60);
 }
 .cat-produce{
-  border-left-color: #84cc16;
-  background: linear-gradient(180deg, rgba(132,204,22,.10), transparent 35%);
+  --cat-accent: #84cc16;
+  --cat-head-bg: rgba(132,204,22,.11);
+  --cat-pending-bg: rgba(132,204,22,.08);
+  --cat-pending-border: rgba(132,204,22,.28);
+  --cat-bought-bg: rgba(132,204,22,.20);
+  --cat-bought-border: rgba(132,204,22,.60);
 }
 .cat-drinks{
-  border-left-color: #38bdf8;
-  background: linear-gradient(180deg, rgba(56,189,248,.10), transparent 35%);
+  --cat-accent: #38bdf8;
+  --cat-head-bg: rgba(56,189,248,.11);
+  --cat-pending-bg: rgba(56,189,248,.08);
+  --cat-pending-border: rgba(56,189,248,.28);
+  --cat-bought-bg: rgba(56,189,248,.20);
+  --cat-bought-border: rgba(56,189,248,.60);
 }
 .cat-grocery{
-  border-left-color: #a78bfa;
-  background: linear-gradient(180deg, rgba(167,139,250,.10), transparent 35%);
+  --cat-accent: #a78bfa;
+  --cat-head-bg: rgba(167,139,250,.12);
+  --cat-pending-bg: rgba(167,139,250,.08);
+  --cat-pending-border: rgba(167,139,250,.28);
+  --cat-bought-bg: rgba(167,139,250,.20);
+  --cat-bought-border: rgba(167,139,250,.60);
 }
 .cat-protein{
-  border-left-color: #f97316;
-  background: linear-gradient(180deg, rgba(249,115,22,.10), transparent 35%);
+  --cat-accent: #f97316;
+  --cat-head-bg: rgba(249,115,22,.12);
+  --cat-pending-bg: rgba(249,115,22,.08);
+  --cat-pending-border: rgba(249,115,22,.28);
+  --cat-bought-bg: rgba(249,115,22,.20);
+  --cat-bought-border: rgba(249,115,22,.60);
 }
 .cat-general{
-  border-left-color: #9ca3af;
-  background: linear-gradient(180deg, rgba(156,163,175,.10), transparent 35%);
+  --cat-accent: #9ca3af;
+  --cat-head-bg: rgba(156,163,175,.10);
+  --cat-pending-bg: rgba(156,163,175,.08);
+  --cat-pending-border: rgba(156,163,175,.28);
+  --cat-bought-bg: rgba(156,163,175,.20);
+  --cat-bought-border: rgba(156,163,175,.60);
 }
 .cat-churrasco{
-  border-left-color: #ef4444;
-  background: linear-gradient(180deg, rgba(239,68,68,.10), transparent 35%);
+  --cat-accent: #ef4444;
+  --cat-head-bg: rgba(239,68,68,.11);
+  --cat-pending-bg: rgba(239,68,68,.08);
+  --cat-pending-border: rgba(239,68,68,.28);
+  --cat-bought-bg: rgba(239,68,68,.20);
+  --cat-bought-border: rgba(239,68,68,.60);
 }
 
-[data-theme="light"] .category-block{
-  border-left-width: 5px;
+[data-theme="light"] .category-pill-head{
+  background: linear-gradient(180deg, var(--cat-head-bg), #ffffff 45%);
 }
 
-[data-theme="light"] .cat-icon{
-  filter: saturate(1.05);
+/* Desktop */
+.category-block table tbody tr:not(.row-bought){
+  background: var(--cat-pending-bg);
+}
+.category-block table tbody tr.row-bought{
+  background: var(--cat-bought-bg);
+  box-shadow: inset 0 0 0 2px var(--cat-bought-border);
 }
 
-[data-theme="light"] .category-block table tbody tr{
-  background: rgba(255,255,255,.88);
-}
-
-[data-theme="dark"] .category-block table tbody tr{
-  background: rgba(255,255,255,.05);
-}
-
-/* Desktop: deixa toda a tabela da seção com mesma linguagem de cor */
-.category-block.cat-clean table tbody tr:not(.row-bought){
-  background: rgba(34,197,94,.08);
-}
-.category-block.cat-bakery table tbody tr:not(.row-bought){
-  background: rgba(245,158,11,.09);
-}
-.category-block.cat-produce table tbody tr:not(.row-bought){
-  background: rgba(132,204,22,.09);
-}
-.category-block.cat-drinks table tbody tr:not(.row-bought){
-  background: rgba(56,189,248,.09);
-}
-.category-block.cat-grocery table tbody tr:not(.row-bought){
-  background: rgba(167,139,250,.10);
-}
-.category-block.cat-protein table tbody tr:not(.row-bought){
-  background: rgba(249,115,22,.10);
-}
-.category-block.cat-general table tbody tr:not(.row-bought){
-  background: rgba(156,163,175,.10);
-}
-.category-block.cat-churrasco table tbody tr:not(.row-bought){
-  background: rgba(239,68,68,.10);
-}
-
-/* Mobile: aplica a cor da categoria em todos os cards da seção */
-.mobile-list.cat-clean .mcard:not(.row-bought){
-  background: rgba(34,197,94,.05);
-  border-color: rgba(34,197,94,.24);
-}
-.mobile-list.cat-bakery .mcard:not(.row-bought){
-  background: rgba(245,158,11,.06);
-  border-color: rgba(245,158,11,.24);
-}
-.mobile-list.cat-produce .mcard:not(.row-bought){
-  background: rgba(132,204,22,.06);
-  border-color: rgba(132,204,22,.24);
-}
-.mobile-list.cat-drinks .mcard:not(.row-bought){
-  background: rgba(56,189,248,.06);
-  border-color: rgba(56,189,248,.24);
-}
-.mobile-list.cat-grocery .mcard:not(.row-bought){
-  background: rgba(167,139,250,.07);
-  border-color: rgba(167,139,250,.24);
-}
-.mobile-list.cat-protein .mcard:not(.row-bought){
-  background: rgba(249,115,22,.06);
-  border-color: rgba(249,115,22,.24);
-}
-.mobile-list.cat-general .mcard:not(.row-bought){
-  background: rgba(156,163,175,.07);
-  border-color: rgba(156,163,175,.24);
-}
-.mobile-list.cat-churrasco .mcard:not(.row-bought){
-  background: rgba(239,68,68,.06);
-  border-color: rgba(239,68,68,.24);
-}
-
-/* Status visual forte para diferenciar pendente x comprado */
+/* Mobile por categoria/status */
 .mobile-list .mcard.row-pending{
-  box-shadow: inset 0 0 0 1px rgba(245,158,11,.20);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
 }
-
 .mobile-list .mcard.row-bought{
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.20);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
 }
 
-.mobile-list .mcard.row-bought .mmeta{
-  color: rgba(229,231,235,.92);
+.mobile-list.cat-clean .mcard.row-pending,
+.mobile-list.cat-bakery .mcard.row-pending,
+.mobile-list.cat-produce .mcard.row-pending,
+.mobile-list.cat-drinks .mcard.row-pending,
+.mobile-list.cat-grocery .mcard.row-pending,
+.mobile-list.cat-protein .mcard.row-pending,
+.mobile-list.cat-general .mcard.row-pending,
+.mobile-list.cat-churrasco .mcard.row-pending{
+  background: var(--cat-pending-bg);
+  border-color: var(--cat-pending-border);
 }
 
-[data-theme="light"] .mobile-list .mcard.row-pending .mmeta,
-[data-theme="light"] .mobile-list .mcard.row-pending .mmeta b,
-[data-theme="light"] .mobile-list .mcard.row-bought .mmeta,
-[data-theme="light"] .mobile-list .mcard.row-bought .mmeta b{
-  color: #111827;
-}
-
-/* Comprado por categoria (tom mais forte da própria seção) */
-.mobile-list.cat-clean .mcard.row-bought{
-  background: rgba(34,197,94,.18) !important;
-  border-color: rgba(34,197,94,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(34,197,94,.34);
-}
-.mobile-list.cat-bakery .mcard.row-bought{
-  background: rgba(245,158,11,.19) !important;
-  border-color: rgba(245,158,11,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(245,158,11,.36);
-}
-.mobile-list.cat-produce .mcard.row-bought{
-  background: rgba(132,204,22,.20) !important;
-  border-color: rgba(132,204,22,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(132,204,22,.36);
-}
-.mobile-list.cat-drinks .mcard.row-bought{
-  background: rgba(56,189,248,.19) !important;
-  border-color: rgba(56,189,248,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(56,189,248,.36);
-}
-.mobile-list.cat-grocery .mcard.row-bought{
-  background: rgba(167,139,250,.21) !important;
-  border-color: rgba(167,139,250,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(167,139,250,.36);
-}
-.mobile-list.cat-protein .mcard.row-bought{
-  background: rgba(249,115,22,.19) !important;
-  border-color: rgba(249,115,22,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(249,115,22,.36);
-}
-.mobile-list.cat-general .mcard.row-bought{
-  background: rgba(156,163,175,.19) !important;
-  border-color: rgba(156,163,175,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(156,163,175,.36);
-}
+.mobile-list.cat-clean .mcard.row-bought,
+.mobile-list.cat-bakery .mcard.row-bought,
+.mobile-list.cat-produce .mcard.row-bought,
+.mobile-list.cat-drinks .mcard.row-bought,
+.mobile-list.cat-grocery .mcard.row-bought,
+.mobile-list.cat-protein .mcard.row-bought,
+.mobile-list.cat-general .mcard.row-bought,
 .mobile-list.cat-churrasco .mcard.row-bought{
-  background: rgba(239,68,68,.18) !important;
-  border-color: rgba(239,68,68,.58) !important;
-  box-shadow: inset 0 0 0 2px rgba(239,68,68,.34);
+  background: var(--cat-bought-bg);
+  border-color: var(--cat-bought-border);
 }
 
-[data-theme="light"] .cat-clean{
-  background: linear-gradient(180deg, rgba(34,197,94,.12), rgba(255,255,255,.4) 35%);
+.mmeta b{
+  color: var(--text);
 }
-[data-theme="light"] .cat-bakery{
-  background: linear-gradient(180deg, rgba(245,158,11,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-produce{
-  background: linear-gradient(180deg, rgba(132,204,22,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-drinks{
-  background: linear-gradient(180deg, rgba(56,189,248,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-grocery{
-  background: linear-gradient(180deg, rgba(167,139,250,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-protein{
-  background: linear-gradient(180deg, rgba(249,115,22,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-general{
-  background: linear-gradient(180deg, rgba(156,163,175,.14), rgba(255,255,255,.4) 35%);
-}
-[data-theme="light"] .cat-churrasco{
-  background: linear-gradient(180deg, rgba(239,68,68,.14), rgba(255,255,255,.4) 35%);
+
+@media (max-width: 768px){
+  .cat-title{
+    font-size: 15px;
+  }
+  .cat-count{
+    font-size: 11px;
+  }
 }

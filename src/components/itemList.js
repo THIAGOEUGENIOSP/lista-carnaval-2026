@@ -2,7 +2,9 @@
 import { brl, formatQuantidade } from "../utils/format.js";
 import {
   groupShoppingItemsByCategory,
-  getShoppingCategoryMeta,
+  getCategoryMeta,
+  normalizeShoppingCategory,
+  toCategoryAnchor,
 } from "../utils/categories.js";
 
 function collabName(it) {
@@ -87,15 +89,23 @@ function renderSummaryRow(items, forChurrasco) {
 function renderTableBlock({
   title,
   items,
-  showCategory,
   categoryClass = "",
   categoryIcon = "",
+  categoryAnchor = "",
+  forChurrasco = false,
 }) {
   return `
-  <div class="card section only-desktop category-block ${categoryClass}" style="margin-top:12px">
-    <div class="row space-between">
-      <h2><span class="cat-icon">${categoryIcon}</span>${title}</h2>
-      <div class="muted" style="font-size:12px">${items.length} item(ns)</div>
+  <div
+    class="card section only-desktop category-block category-pill-head ${categoryClass}"
+    data-category-anchor="${categoryAnchor}"
+    style="margin-top:12px"
+  >
+    <div class="category-head">
+      <div class="category-title-wrap">
+        <span class="cat-dot">${categoryIcon}</span>
+        <h2 class="cat-title">${title}</h2>
+      </div>
+      <div class="cat-count">${items.length} item(ns)</div>
     </div>
 
     <div class="table-wrap" style="margin-top:10px">
@@ -178,12 +188,19 @@ function renderTableBlock({
             `;
             })
             .join("")}
-          ${renderSummaryRow(items, !showCategory)}
+          ${renderSummaryRow(items, forChurrasco)}
         </tbody>
       </table>
     </div>
   </div>
   `;
+}
+
+function buildShortcutCategories(items) {
+  const grouped = groupShoppingItemsByCategory(items.filter((it) => !isChurrasco(it)));
+  const list = grouped.map((g) => normalizeShoppingCategory(g.category));
+  if (items.some(isChurrasco)) list.push("Churrasco");
+  return list;
 }
 
 export function renderItemListControls(state, items = []) {
@@ -203,6 +220,25 @@ export function renderItemListControls(state, items = []) {
       (name) =>
         `<option value="${name}" ${state.filterCollaborator === name ? "selected" : ""}>${name}</option>`,
     )
+    .join("");
+
+  const categoriesPresent = buildShortcutCategories(items);
+  const shortcutButtons = categoriesPresent
+    .map((category) => {
+      const meta = getCategoryMeta(category);
+      const anchor = toCategoryAnchor(category);
+      return `
+        <button
+          class="btn small category-shortcut ${meta.className}"
+          data-action="scroll-category"
+          data-category="${anchor}"
+          title="${category}"
+        >
+          <span class="cat-dot">${meta.icon}</span>
+          <span class="cat-shortcut-label">${category}</span>
+        </button>
+      `;
+    })
     .join("");
 
   return `
@@ -239,6 +275,9 @@ export function renderItemListControls(state, items = []) {
         </select>
       </div>
     </div>
+    <div class="row category-shortcuts">
+      ${shortcutButtons}
+    </div>
   </div>
   `;
 }
@@ -257,17 +296,19 @@ export function renderItemTable(items, sortKey) {
         renderTableBlock({
           title: `Lista de Compras • ${g.category}`,
           items: g.items,
-          showCategory: true,
-          categoryClass: getShoppingCategoryMeta(g.category).className,
-          categoryIcon: getShoppingCategoryMeta(g.category).icon,
+          categoryClass: getCategoryMeta(g.category).className,
+          categoryIcon: getCategoryMeta(g.category).icon,
+          categoryAnchor: toCategoryAnchor(g.category),
         }),
       )
       .join("")}
     ${renderTableBlock({
       title: "Churrasco",
       items: churrasco,
-      showCategory: false,
       categoryIcon: "🔥",
+      categoryClass: "cat-churrasco",
+      categoryAnchor: toCategoryAnchor("Churrasco"),
+      forChurrasco: true,
     })}
   `;
 }
@@ -283,20 +324,31 @@ export function renderItemMobileList(items, sortKey) {
   const renderMobileBlock = (
     title,
     blockItems,
-    showCategory,
     categoryClass = "",
     categoryIcon = "",
+    categoryAnchor = "",
   ) => {
     const { qtd, total } = sumTotals(blockItems);
-    const qtdLabel = showCategory
+    const isShoppingListCategory = categoryAnchor !== toCategoryAnchor("Churrasco");
+    const qtdLabel = isShoppingListCategory
       ? `${qtd.toLocaleString("pt-BR")} un`
       : formatQuantidade(qtd, "Churrasco");
 
     const header = `
-      <div class="card section only-mobile category-block ${categoryClass}" style="margin-top:12px">
-        <div class="row space-between">
-          <h2><span class="cat-icon">${categoryIcon}</span>${title}</h2>
-          <div class="muted" style="font-size:12px">${blockItems.length} item(ns)</div>
+      <div
+        class="card section only-mobile category-block category-pill-head ${categoryClass}"
+        data-category-anchor="${categoryAnchor}"
+        style="margin-top:12px"
+      >
+        <div class="category-head">
+          <div class="category-title-wrap">
+            <span class="cat-dot">${categoryIcon}</span>
+            <h2 class="cat-title">${title}</h2>
+          </div>
+          <div class="category-head-sub">
+            <div class="cat-count">${blockItems.length} item(ns)</div>
+            <button class="btn small category-top-btn" data-action="scroll-top">Início</button>
+          </div>
         </div>
       </div>
     `;
@@ -385,12 +437,18 @@ export function renderItemMobileList(items, sortKey) {
         renderMobileBlock(
           `Lista de Compras • ${g.category}`,
           g.items,
-          true,
-          getShoppingCategoryMeta(g.category).className,
-          getShoppingCategoryMeta(g.category).icon,
+          getCategoryMeta(g.category).className,
+          getCategoryMeta(g.category).icon,
+          toCategoryAnchor(g.category),
         ),
       )
       .join("")}
-    ${renderMobileBlock("Churrasco", churrasco, false, "cat-churrasco", "🔥")}
+    ${renderMobileBlock(
+      "Churrasco",
+      churrasco,
+      "cat-churrasco",
+      "🔥",
+      toCategoryAnchor("Churrasco"),
+    )}
   `;
 }

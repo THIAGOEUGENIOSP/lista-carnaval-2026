@@ -10,6 +10,7 @@ export function renderHeader({ periodLabel, userName, theme, deletedCount = 0 })
       </div>
 
       <div class="row" style="gap:10px">
+        <button class="btn small" data-action="scroll-top">Início</button>
         <button class="btn small" data-action="prev-month">◀</button>
         <div class="badge" title="Período atual"><span>📅</span><span><b>${periodLabel}</b></span></div>
         <button class="btn small" data-action="next-month">▶</button>
@@ -28,6 +29,7 @@ export function renderHeader({ periodLabel, userName, theme, deletedCount = 0 })
     <div class="hr"></div>
 
     <div class="row">
+      <button class="btn only-mobile" data-action="scroll-top">Início</button>
       <button class="btn warn" data-action="zero-prices">Zerar preços do mês</button>
       <button class="btn primary" data-action="copy-next">Copiar lista p/ próximo mês</button>
       <button class="btn danger" data-action="delete-month">Mover lista do mês p/ lixeira</button>

@@ -699,6 +699,16 @@ function bindDelegatedEvents() {
         return;
       }
 
+      if (action === "scroll-top") {
+        const target = document.querySelector('[data-action="open-add"]');
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        return;
+      }
+
       if (action === "prev-month") {
         state.cursorDate = addMonths(state.cursorDate, -1);
         saveCursor();
@@ -765,6 +775,41 @@ function bindDelegatedEvents() {
         const updated = normalizeItem(await updateItem(id, { status: next }));
         state.items = state.items.map((x) => (x.id === id ? updated : x));
         renderApp();
+        return;
+      }
+
+      if (action === "scroll-category") {
+        const category = String(el.dataset.category || "").trim();
+        if (!category) return;
+
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        let target = null;
+
+        if (isMobile) {
+          target = document.querySelector(
+            `.only-mobile[data-category-anchor="${category}"]`,
+          );
+        } else {
+          target = document.querySelector(
+            `.only-desktop[data-category-anchor="${category}"]`,
+          );
+        }
+
+        if (!target) {
+          target = document.querySelector(
+            `[data-category-anchor="${category}"]`,
+          );
+        }
+
+        if (!target) {
+          toast.show({
+            title: "Categoria",
+            message: "Não foi possível localizar essa categoria na lista.",
+          });
+          return;
+        }
+
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
 

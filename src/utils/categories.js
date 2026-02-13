@@ -16,6 +16,7 @@ const CATEGORY_META = {
   Mercearia: { icon: "🛒", className: "cat-grocery" },
   "Proteínas e Ovos": { icon: "🥚", className: "cat-protein" },
   Geral: { icon: "📦", className: "cat-general" },
+  Churrasco: { icon: "🔥", className: "cat-churrasco" },
 };
 
 const CATEGORY_KEYWORDS = {
@@ -183,4 +184,16 @@ export function groupShoppingItemsByCategory(items) {
 export function getShoppingCategoryMeta(category) {
   const normalized = normalizeShoppingCategory(category);
   return CATEGORY_META[normalized] || CATEGORY_META.Geral;
+}
+
+export function getCategoryMeta(category) {
+  const normalized = String(category || "").trim();
+  if (normalizeText(normalized) === normalizeText("Churrasco")) {
+    return CATEGORY_META.Churrasco;
+  }
+  return getShoppingCategoryMeta(category);
+}
+
+export function toCategoryAnchor(category) {
+  return normalizeText(category).replace(/\s+/g, "-");
 }
