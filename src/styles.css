@@ -787,3 +787,210 @@ tr.row-bought .badge{
 .collab-name{
   white-space: nowrap;
 }
+
+.category-block{
+  border-left-width: 5px;
+}
+
+.cat-icon{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.cat-clean{
+  border-left-color: #22c55e;
+  background: linear-gradient(180deg, rgba(34,197,94,.08), transparent 35%);
+}
+.cat-bakery{
+  border-left-color: #f59e0b;
+  background: linear-gradient(180deg, rgba(245,158,11,.10), transparent 35%);
+}
+.cat-produce{
+  border-left-color: #84cc16;
+  background: linear-gradient(180deg, rgba(132,204,22,.10), transparent 35%);
+}
+.cat-drinks{
+  border-left-color: #38bdf8;
+  background: linear-gradient(180deg, rgba(56,189,248,.10), transparent 35%);
+}
+.cat-grocery{
+  border-left-color: #a78bfa;
+  background: linear-gradient(180deg, rgba(167,139,250,.10), transparent 35%);
+}
+.cat-protein{
+  border-left-color: #f97316;
+  background: linear-gradient(180deg, rgba(249,115,22,.10), transparent 35%);
+}
+.cat-general{
+  border-left-color: #9ca3af;
+  background: linear-gradient(180deg, rgba(156,163,175,.10), transparent 35%);
+}
+.cat-churrasco{
+  border-left-color: #ef4444;
+  background: linear-gradient(180deg, rgba(239,68,68,.10), transparent 35%);
+}
+
+[data-theme="light"] .category-block{
+  border-left-width: 5px;
+}
+
+[data-theme="light"] .cat-icon{
+  filter: saturate(1.05);
+}
+
+[data-theme="light"] .category-block table tbody tr{
+  background: rgba(255,255,255,.88);
+}
+
+[data-theme="dark"] .category-block table tbody tr{
+  background: rgba(255,255,255,.05);
+}
+
+/* Desktop: deixa toda a tabela da seção com mesma linguagem de cor */
+.category-block.cat-clean table tbody tr:not(.row-bought){
+  background: rgba(34,197,94,.08);
+}
+.category-block.cat-bakery table tbody tr:not(.row-bought){
+  background: rgba(245,158,11,.09);
+}
+.category-block.cat-produce table tbody tr:not(.row-bought){
+  background: rgba(132,204,22,.09);
+}
+.category-block.cat-drinks table tbody tr:not(.row-bought){
+  background: rgba(56,189,248,.09);
+}
+.category-block.cat-grocery table tbody tr:not(.row-bought){
+  background: rgba(167,139,250,.10);
+}
+.category-block.cat-protein table tbody tr:not(.row-bought){
+  background: rgba(249,115,22,.10);
+}
+.category-block.cat-general table tbody tr:not(.row-bought){
+  background: rgba(156,163,175,.10);
+}
+.category-block.cat-churrasco table tbody tr:not(.row-bought){
+  background: rgba(239,68,68,.10);
+}
+
+/* Mobile: aplica a cor da categoria em todos os cards da seção */
+.mobile-list.cat-clean .mcard:not(.row-bought){
+  background: rgba(34,197,94,.05);
+  border-color: rgba(34,197,94,.24);
+}
+.mobile-list.cat-bakery .mcard:not(.row-bought){
+  background: rgba(245,158,11,.06);
+  border-color: rgba(245,158,11,.24);
+}
+.mobile-list.cat-produce .mcard:not(.row-bought){
+  background: rgba(132,204,22,.06);
+  border-color: rgba(132,204,22,.24);
+}
+.mobile-list.cat-drinks .mcard:not(.row-bought){
+  background: rgba(56,189,248,.06);
+  border-color: rgba(56,189,248,.24);
+}
+.mobile-list.cat-grocery .mcard:not(.row-bought){
+  background: rgba(167,139,250,.07);
+  border-color: rgba(167,139,250,.24);
+}
+.mobile-list.cat-protein .mcard:not(.row-bought){
+  background: rgba(249,115,22,.06);
+  border-color: rgba(249,115,22,.24);
+}
+.mobile-list.cat-general .mcard:not(.row-bought){
+  background: rgba(156,163,175,.07);
+  border-color: rgba(156,163,175,.24);
+}
+.mobile-list.cat-churrasco .mcard:not(.row-bought){
+  background: rgba(239,68,68,.06);
+  border-color: rgba(239,68,68,.24);
+}
+
+/* Status visual forte para diferenciar pendente x comprado */
+.mobile-list .mcard.row-pending{
+  box-shadow: inset 0 0 0 1px rgba(245,158,11,.20);
+}
+
+.mobile-list .mcard.row-bought{
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.20);
+}
+
+.mobile-list .mcard.row-bought .mmeta{
+  color: rgba(229,231,235,.92);
+}
+
+[data-theme="light"] .mobile-list .mcard.row-pending .mmeta,
+[data-theme="light"] .mobile-list .mcard.row-pending .mmeta b,
+[data-theme="light"] .mobile-list .mcard.row-bought .mmeta,
+[data-theme="light"] .mobile-list .mcard.row-bought .mmeta b{
+  color: #111827;
+}
+
+/* Comprado por categoria (tom mais forte da própria seção) */
+.mobile-list.cat-clean .mcard.row-bought{
+  background: rgba(34,197,94,.18) !important;
+  border-color: rgba(34,197,94,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(34,197,94,.34);
+}
+.mobile-list.cat-bakery .mcard.row-bought{
+  background: rgba(245,158,11,.19) !important;
+  border-color: rgba(245,158,11,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(245,158,11,.36);
+}
+.mobile-list.cat-produce .mcard.row-bought{
+  background: rgba(132,204,22,.20) !important;
+  border-color: rgba(132,204,22,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(132,204,22,.36);
+}
+.mobile-list.cat-drinks .mcard.row-bought{
+  background: rgba(56,189,248,.19) !important;
+  border-color: rgba(56,189,248,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(56,189,248,.36);
+}
+.mobile-list.cat-grocery .mcard.row-bought{
+  background: rgba(167,139,250,.21) !important;
+  border-color: rgba(167,139,250,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(167,139,250,.36);
+}
+.mobile-list.cat-protein .mcard.row-bought{
+  background: rgba(249,115,22,.19) !important;
+  border-color: rgba(249,115,22,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(249,115,22,.36);
+}
+.mobile-list.cat-general .mcard.row-bought{
+  background: rgba(156,163,175,.19) !important;
+  border-color: rgba(156,163,175,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(156,163,175,.36);
+}
+.mobile-list.cat-churrasco .mcard.row-bought{
+  background: rgba(239,68,68,.18) !important;
+  border-color: rgba(239,68,68,.58) !important;
+  box-shadow: inset 0 0 0 2px rgba(239,68,68,.34);
+}
+
+[data-theme="light"] .cat-clean{
+  background: linear-gradient(180deg, rgba(34,197,94,.12), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-bakery{
+  background: linear-gradient(180deg, rgba(245,158,11,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-produce{
+  background: linear-gradient(180deg, rgba(132,204,22,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-drinks{
+  background: linear-gradient(180deg, rgba(56,189,248,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-grocery{
+  background: linear-gradient(180deg, rgba(167,139,250,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-protein{
+  background: linear-gradient(180deg, rgba(249,115,22,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-general{
+  background: linear-gradient(180deg, rgba(156,163,175,.14), rgba(255,255,255,.4) 35%);
+}
+[data-theme="light"] .cat-churrasco{
+  background: linear-gradient(180deg, rgba(239,68,68,.14), rgba(255,255,255,.4) 35%);
+}

@@ -8,6 +8,16 @@ const CATEGORY_ORDER = [
   "Geral",
 ];
 
+const CATEGORY_META = {
+  "Limpeza e Higiene": { icon: "🧽", className: "cat-clean" },
+  "Padaria e Laticínios": { icon: "🥖", className: "cat-bakery" },
+  Hortifruti: { icon: "🥬", className: "cat-produce" },
+  Bebidas: { icon: "🥤", className: "cat-drinks" },
+  Mercearia: { icon: "🛒", className: "cat-grocery" },
+  "Proteínas e Ovos": { icon: "🥚", className: "cat-protein" },
+  Geral: { icon: "📦", className: "cat-general" },
+};
+
 const CATEGORY_KEYWORDS = {
   "Limpeza e Higiene": [
     "papel higienico",
@@ -168,4 +178,9 @@ export function groupShoppingItemsByCategory(items) {
     category: cat,
     items: map.get(cat) || [],
   })).filter((g) => g.items.length > 0);
+}
+
+export function getShoppingCategoryMeta(category) {
+  const normalized = normalizeShoppingCategory(category);
+  return CATEGORY_META[normalized] || CATEGORY_META.Geral;
 }

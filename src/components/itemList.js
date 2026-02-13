@@ -1,6 +1,9 @@
 // src/components/itemList.js
 import { brl, formatQuantidade } from "../utils/format.js";
-import { groupShoppingItemsByCategory } from "../utils/categories.js";
+import {
+  groupShoppingItemsByCategory,
+  getShoppingCategoryMeta,
+} from "../utils/categories.js";
 
 function collabName(it) {
   return (
@@ -81,11 +84,17 @@ function renderSummaryRow(items, forChurrasco) {
   `;
 }
 
-function renderTableBlock({ title, items, showCategory }) {
+function renderTableBlock({
+  title,
+  items,
+  showCategory,
+  categoryClass = "",
+  categoryIcon = "",
+}) {
   return `
-  <div class="card section only-desktop" style="margin-top:12px">
+  <div class="card section only-desktop category-block ${categoryClass}" style="margin-top:12px">
     <div class="row space-between">
-      <h2>${title}</h2>
+      <h2><span class="cat-icon">${categoryIcon}</span>${title}</h2>
       <div class="muted" style="font-size:12px">${items.length} item(ns)</div>
     </div>
 
@@ -249,6 +258,8 @@ export function renderItemTable(items, sortKey) {
           title: `Lista de Compras • ${g.category}`,
           items: g.items,
           showCategory: true,
+          categoryClass: getShoppingCategoryMeta(g.category).className,
+          categoryIcon: getShoppingCategoryMeta(g.category).icon,
         }),
       )
       .join("")}
@@ -256,6 +267,7 @@ export function renderItemTable(items, sortKey) {
       title: "Churrasco",
       items: churrasco,
       showCategory: false,
+      categoryIcon: "🔥",
     })}
   `;
 }
@@ -268,16 +280,22 @@ export function renderItemMobileList(items, sortKey) {
     items: sortItems(g.items, sortKey),
   }));
 
-  const renderMobileBlock = (title, blockItems, showCategory) => {
+  const renderMobileBlock = (
+    title,
+    blockItems,
+    showCategory,
+    categoryClass = "",
+    categoryIcon = "",
+  ) => {
     const { qtd, total } = sumTotals(blockItems);
     const qtdLabel = showCategory
       ? `${qtd.toLocaleString("pt-BR")} un`
       : formatQuantidade(qtd, "Churrasco");
 
     const header = `
-      <div class="card section only-mobile" style="margin-top:12px">
+      <div class="card section only-mobile category-block ${categoryClass}" style="margin-top:12px">
         <div class="row space-between">
-          <h2>${title}</h2>
+          <h2><span class="cat-icon">${categoryIcon}</span>${title}</h2>
           <div class="muted" style="font-size:12px">${blockItems.length} item(ns)</div>
         </div>
       </div>
@@ -285,7 +303,7 @@ export function renderItemMobileList(items, sortKey) {
 
     return `
       ${header}
-      <div class="mobile-list" aria-label="Lista mobile ${title}">
+      <div class="mobile-list ${categoryClass}" aria-label="Lista mobile ${title}">
         ${blockItems
           .map((it) => {
             const totalItem = isChurrasco(it)
@@ -298,7 +316,7 @@ export function renderItemMobileList(items, sortKey) {
               : `${Number(it.quantidade || 0).toLocaleString("pt-BR")} un`;
 
             return `
-            <div class="mcard ${isBought ? "row-bought" : ""}">
+            <div class="mcard ${isBought ? "row-bought" : "row-pending"}">
               <div class="mcard-inner">
                 <div class="mcard-header">
                   <div class="mname">${it.nome}</div>
@@ -360,8 +378,16 @@ export function renderItemMobileList(items, sortKey) {
 
   return `
     ${grouped
-      .map((g) => renderMobileBlock(`Lista de Compras • ${g.category}`, g.items, true))
+      .map((g) =>
+        renderMobileBlock(
+          `Lista de Compras • ${g.category}`,
+          g.items,
+          true,
+          getShoppingCategoryMeta(g.category).className,
+          getShoppingCategoryMeta(g.category).icon,
+        ),
+      )
       .join("")}
-    ${renderMobileBlock("Churrasco", churrasco, false)}
+    ${renderMobileBlock("Churrasco", churrasco, false, "cat-churrasco", "🔥")}
   `;
 }
