@@ -1,5 +1,6 @@
 // src/components/itemList.js
 import { brl, formatQuantidade } from "../utils/format.js";
+import { groupShoppingItemsByCategory } from "../utils/categories.js";
 
 function collabName(it) {
   return (
@@ -235,14 +236,22 @@ export function renderItemListControls(state, items = []) {
 
 export function renderItemTable(items, sortKey) {
   const churrasco = sortItems(items.filter(isChurrasco), sortKey);
-  const others = sortItems(items.filter((it) => !isChurrasco(it)), sortKey);
+  const others = items.filter((it) => !isChurrasco(it));
+  const grouped = groupShoppingItemsByCategory(others).map((g) => ({
+    ...g,
+    items: sortItems(g.items, sortKey),
+  }));
 
   return `
-    ${renderTableBlock({
-      title: "Lista de Compras",
-      items: others,
-      showCategory: true,
-    })}
+    ${grouped
+      .map((g) =>
+        renderTableBlock({
+          title: `Lista de Compras • ${g.category}`,
+          items: g.items,
+          showCategory: true,
+        }),
+      )
+      .join("")}
     ${renderTableBlock({
       title: "Churrasco",
       items: churrasco,
@@ -253,7 +262,11 @@ export function renderItemTable(items, sortKey) {
 
 export function renderItemMobileList(items, sortKey) {
   const churrasco = sortItems(items.filter(isChurrasco), sortKey);
-  const others = sortItems(items.filter((it) => !isChurrasco(it)), sortKey);
+  const others = items.filter((it) => !isChurrasco(it));
+  const grouped = groupShoppingItemsByCategory(others).map((g) => ({
+    ...g,
+    items: sortItems(g.items, sortKey),
+  }));
 
   const renderMobileBlock = (title, blockItems, showCategory) => {
     const { qtd, total } = sumTotals(blockItems);
@@ -346,7 +359,9 @@ export function renderItemMobileList(items, sortKey) {
   };
 
   return `
-    ${renderMobileBlock("Lista de Compras", others, true)}
+    ${grouped
+      .map((g) => renderMobileBlock(`Lista de Compras • ${g.category}`, g.items, true))
+      .join("")}
     ${renderMobileBlock("Churrasco", churrasco, false)}
   `;
 }

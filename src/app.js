@@ -9,6 +9,7 @@ import {
   bindCurrencyInputs,
 } from "./utils/format.js";
 import { addMonths, monthKey, periodName } from "./utils/period.js";
+import { classifyShoppingCategory } from "./utils/categories.js";
 
 import { mountToast } from "./components/toast.js";
 import { renderHeader } from "./components/header.js";
@@ -519,8 +520,11 @@ function bindPerRenderInputs() {
   const form = qs("#itemForm");
   if (form) {
     const qtdInput = form.querySelector('input[name="quantidade"]');
+    const nameInput = form.querySelector('input[name="nome"]');
     const categoriaSelect = form.querySelector('select[name="categoria"]');
     const tipoSelect = form.querySelector('select[name="tipo"]');
+    const categoryAssist = form.querySelector("#categoryAssist");
+    const idInput = form.querySelector('input[name="id"]');
 
     const syncTipo = () => {
       if (!categoriaSelect || !tipoSelect) return;
@@ -536,6 +540,31 @@ function bindPerRenderInputs() {
     if (categoriaSelect) {
       categoriaSelect.addEventListener("change", syncTipo);
       syncTipo();
+    }
+
+    const applyCategorySuggestion = () => {
+      if (!nameInput || !categoriaSelect) return;
+      const isEditing = Boolean(String(idInput?.value || "").trim());
+      if (isEditing) return;
+      if (categoriaSelect.value === "Churrasco") {
+        if (categoryAssist) categoryAssist.textContent = "";
+        return;
+      }
+
+      const suggested = classifyShoppingCategory(nameInput.value);
+      categoriaSelect.value = suggested;
+      if (categoryAssist) {
+        categoryAssist.textContent =
+          suggested === "Geral"
+            ? "Categoria automática: Geral"
+            : `Categoria automática: ${suggested}`;
+      }
+      syncTipo();
+    };
+
+    if (nameInput) {
+      nameInput.addEventListener("input", applyCategorySuggestion);
+      nameInput.addEventListener("blur", applyCategorySuggestion);
     }
 
     form.addEventListener("submit", async (e) => {
@@ -562,6 +591,9 @@ function bindPerRenderInputs() {
 
         const isChurrasco =
           String(payload.categoria || "").trim().toLowerCase() === "churrasco";
+        if (!isChurrasco) {
+          payload.categoria = classifyShoppingCategory(payload.nome);
+        }
         if (!isChurrasco) {
           const key = normalizeNameKey(payload.nome);
           const exists = state.items.some((it) => {

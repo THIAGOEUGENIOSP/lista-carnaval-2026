@@ -1,6 +1,12 @@
 import { formatQuantidade, formatCurrencyBRL } from "../utils/format.js";
+import { getShoppingCategories } from "../utils/categories.js";
 
 export function renderItemFormModal() {
+  const shoppingCategories = getShoppingCategories();
+  const generalOptions = shoppingCategories
+    .map((cat) => `<option value="${cat}">${cat}</option>`)
+    .join("");
+
   return `
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="card modal">
@@ -43,9 +49,10 @@ export function renderItemFormModal() {
         <div>
           <label class="muted" style="font-size:12px">Categoria</label>
           <select name="categoria">
-            <option value="Geral">Geral</option>
+            ${generalOptions}
             <option value="Churrasco">Churrasco</option>
           </select>
+          <div class="muted" style="font-size:11px;margin-top:6px" id="categoryAssist"></div>
         </div>
 
         <div>
@@ -104,7 +111,9 @@ export function openModal({ title, subtitle, hint, data }) {
   document.getElementById("modalHint").textContent = hint || "";
 
   const form = document.getElementById("itemForm");
+  const categoryAssist = document.getElementById("categoryAssist");
   form.reset();
+  if (categoryAssist) categoryAssist.textContent = "";
 
   if (data) {
     form.nome.value = data.nome ?? "";
