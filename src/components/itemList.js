@@ -21,6 +21,14 @@ function isChurrasco(it) {
   return String(it?.categoria || "").trim().toLowerCase() === "churrasco";
 }
 
+function normalizeSearchName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
 function sortItems(items, sortKey) {
   const arr = [...items];
   switch (sortKey) {
@@ -145,7 +153,7 @@ function renderTableBlock({
                 : it.quantidade;
 
               return `
-              <tr class="${isBought ? "row-bought" : "row-pending"}">
+              <tr class="${isBought ? "row-bought" : "row-pending"}" data-item-id="${it.id}" data-item-name="${normalizeSearchName(it.nome)}">
                 <td class="item-cell">
                   <div class="item-name">${it.nome}</div>
                 </td>
@@ -282,7 +290,24 @@ export function renderItemListControls(state, items = []) {
   `;
 }
 
-export function renderItemTable(items, sortKey) {
+export function renderItemTable(items, sortKey, searchText = "") {
+  const hasSearch = String(searchText || "").trim().length > 0;
+
+  if (hasSearch) {
+    const sorted = sortItems(items, sortKey);
+    const onlyChurrasco = sorted.length > 0 && sorted.every(isChurrasco);
+    return `
+      ${renderTableBlock({
+        title: "Resultados da busca",
+        items: sorted,
+        categoryClass: "cat-general",
+        categoryIcon: "🔎",
+        categoryAnchor: "resultados-busca",
+        forChurrasco: onlyChurrasco,
+      })}
+    `;
+  }
+
   const churrasco = sortItems(items.filter(isChurrasco), sortKey);
   const others = items.filter((it) => !isChurrasco(it));
   const grouped = groupShoppingItemsByCategory(others).map((g) => ({
@@ -313,13 +338,99 @@ export function renderItemTable(items, sortKey) {
   `;
 }
 
-export function renderItemMobileList(items, sortKey) {
+export function renderItemMobileList(items, sortKey, searchText = "") {
   const churrasco = sortItems(items.filter(isChurrasco), sortKey);
   const others = items.filter((it) => !isChurrasco(it));
   const grouped = groupShoppingItemsByCategory(others).map((g) => ({
     ...g,
     items: sortItems(g.items, sortKey),
   }));
+
+  const renderMobileItemCard = (it) => {
+    const totalItem = isChurrasco(it)
+      ? Number(it.valor_unitario || 0)
+      : Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
+    const isBought = it.status === "COMPRADO";
+    const next = isBought ? "PENDENTE" : "COMPRADO";
+    const qtdDisplay = isChurrasco(it)
+      ? formatQuantidade(it.quantidade, it.categoria)
+      : `${Number(it.quantidade || 0).toLocaleString("pt-BR")} un`;
+
+    return `
+      <div class="mcard ${isBought ? "row-bought" : "row-pending"}" data-item-id="${it.id}" data-item-name="${normalizeSearchName(it.nome)}">
+        <div class="mcard-inner">
+          <div class="mcard-header">
+            <div class="mname">${it.nome}</div>
+            <div class="mtotal">
+              <div class="label">Total</div>
+              <div class="value">${brl(totalItem)}</div>
+              <div class="mstatus ${isBought ? "bought" : "pending"}">
+                ${isBought ? "Comprado" : "Pendente"}
+              </div>
+            </div>
+          </div>
+
+          <div class="mmeta">
+            <span>Por: <b>${collabName(it)}</b></span>
+          </div>
+
+          <div class="mrow">
+            <div class="mrow-labels">
+              <div class="mfield-label">Preço (unit)</div>
+              <div class="mfield-label">Quantidade</div>
+              <div class="mfield-label mfield-actions-label">Ações</div>
+            </div>
+            <div class="mrow-values">
+              <div class="pill" role="button" data-action="edit-mobile" data-field="valor_unitario" data-id="${it.id}">
+                <div class="pvalue">${brl(it.valor_unitario)}</div>
+              </div>
+              <div class="pill qtybox" role="button" data-action="edit-mobile" data-field="quantidade" data-id="${it.id}">
+                <div class="pvalue">${qtdDisplay}</div>
+              </div>
+              <div class="mactions-inline">
+                <button class="icon-btn-action ${isBought ? "active" : ""}" title="Marcar" data-action="toggle-status" data-id="${it.id}" data-next="${next}">
+                  ${isBought ? "↩️" : "✔️"}
+                </button>
+                <button class="icon-btn-action" title="Editar" data-action="edit" data-id="${it.id}">✏️</button>
+                <button class="icon-btn-action danger" title="Excluir" data-action="delete" data-id="${it.id}">🗑️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  const hasSearch = String(searchText || "").trim().length > 0;
+  const searchBlock = hasSearch
+    ? `
+      <div
+        class="card section only-mobile category-block category-pill-head cat-general"
+        data-category-anchor="resultados-busca"
+        style="margin-top:12px"
+      >
+        <div class="category-head">
+          <div class="category-title-wrap">
+            <span class="cat-dot">🔎</span>
+            <h2 class="cat-title">Resultados da busca</h2>
+          </div>
+          <div class="category-head-sub">
+            <div class="cat-count">${items.length} item(ns)</div>
+            <button class="btn small category-top-btn" data-action="scroll-top">Início</button>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-list cat-general search-results only-mobile" style="display:grid" aria-label="Resultados da busca">
+        ${items.map(renderMobileItemCard).join("")}
+      </div>
+    `
+    : "";
+
+  if (hasSearch) {
+    return `
+      ${searchBlock}
+    `;
+  }
 
   const renderMobileBlock = (
     title,
@@ -356,62 +467,7 @@ export function renderItemMobileList(items, sortKey) {
     return `
       ${header}
       <div class="mobile-list ${categoryClass}" aria-label="Lista mobile ${title}">
-        ${blockItems
-          .map((it) => {
-            const totalItem = isChurrasco(it)
-              ? Number(it.valor_unitario || 0)
-              : Number(it.quantidade || 0) * Number(it.valor_unitario || 0);
-            const isBought = it.status === "COMPRADO";
-            const next = isBought ? "PENDENTE" : "COMPRADO";
-            const qtdDisplay = isChurrasco(it)
-              ? formatQuantidade(it.quantidade, it.categoria)
-              : `${Number(it.quantidade || 0).toLocaleString("pt-BR")} un`;
-
-            return `
-            <div class="mcard ${isBought ? "row-bought" : "row-pending"}">
-              <div class="mcard-inner">
-                <div class="mcard-header">
-                  <div class="mname">${it.nome}</div>
-                  <div class="mtotal">
-                    <div class="label">Total</div>
-                    <div class="value">${brl(totalItem)}</div>
-                    <div class="mstatus ${isBought ? "bought" : "pending"}">
-                      ${isBought ? "Comprado" : "Pendente"}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mmeta">
-                  <span>Por: <b>${collabName(it)}</b></span>
-                </div>
-
-                <div class="mrow">
-                  <div class="mrow-labels">
-                    <div class="mfield-label">Preço (unit)</div>
-                    <div class="mfield-label">Quantidade</div>
-                    <div class="mfield-label mfield-actions-label">Ações</div>
-                  </div>
-                  <div class="mrow-values">
-                    <div class="pill" role="button" data-action="edit-mobile" data-field="valor_unitario" data-id="${it.id}">
-                      <div class="pvalue">${brl(it.valor_unitario)}</div>
-                    </div>
-                    <div class="pill qtybox" role="button" data-action="edit-mobile" data-field="quantidade" data-id="${it.id}">
-                      <div class="pvalue">${qtdDisplay}</div>
-                    </div>
-                    <div class="mactions-inline">
-                      <button class="icon-btn-action ${isBought ? "active" : ""}" title="Marcar" data-action="toggle-status" data-id="${it.id}" data-next="${next}">
-                        ${isBought ? "↩️" : "✔️"}
-                      </button>
-                      <button class="icon-btn-action" title="Editar" data-action="edit" data-id="${it.id}">✏️</button>
-                      <button class="icon-btn-action danger" title="Excluir" data-action="delete" data-id="${it.id}">🗑️</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-          })
-          .join("")}
+        ${blockItems.map(renderMobileItemCard).join("")}
 
         <div class="mcard summary">
           <div class="mcard-inner">
@@ -432,6 +488,7 @@ export function renderItemMobileList(items, sortKey) {
   };
 
   return `
+    ${searchBlock}
     ${grouped
       .map((g) =>
         renderMobileBlock(

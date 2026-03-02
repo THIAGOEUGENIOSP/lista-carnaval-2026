@@ -131,6 +131,14 @@ function totalOfItem(it) {
   return Number(it.quantidade || 0) * num(it.valor_unitario || 0);
 }
 
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
 function parseQuantidade(raw, categoria) {
   const txt = String(raw ?? "").trim().toLowerCase().replace(/\s+/g, "");
   if (!txt) return null;
@@ -238,9 +246,9 @@ function applyFilters() {
     );
   }
 
-  const q = (state.searchText || "").trim().toLowerCase();
+  const q = normalizeSearchText(state.searchText);
   if (q) {
-    arr = arr.filter((it) => (it.nome || "").toLowerCase().includes(q));
+    arr = arr.filter((it) => normalizeSearchText(it.nome).includes(q));
   }
 
   switch (state.sortKey) {
@@ -268,7 +276,7 @@ function rerenderListOnly() {
   const filtered = applyFilters();
   list.outerHTML = `
     <div id="mobileLists">
-      ${renderItemMobileList(filtered, state.sortKey)}
+      ${renderItemMobileList(filtered, state.sortKey, state.searchText)}
     </div>
   `;
 }
@@ -279,11 +287,109 @@ function rerenderTableOnly() {
   const filtered = applyFilters();
   tableBlock.outerHTML = `
     <div id="desktopList">
-      ${renderItemTable(filtered, state.sortKey)}
+      ${renderItemTable(filtered, state.sortKey, state.searchText)}
     </div>
   `;
 }
 
+function scrollToListOnSearch(query, attempt = 0) {
+  const q = normalizeSearchText(query);
+  if (!q) return;
+
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const mobileRoot = document.querySelector("#mobileLists");
+  const desktopRoot = document.querySelector("#desktopList");
+  const root = isMobile ? mobileRoot : desktopRoot;
+  if (!root) return;
+
+  const filtered = applyFilters();
+  const firstMatch = filtered.find((it) =>
+    normalizeSearchText(it.nome).includes(q),
+  );
+
+  const selector = isMobile ? ".mcard[data-item-id]" : "tr[data-item-id]";
+  let hit = null;
+
+  if (firstMatch?.id) {
+    hit = root.querySelector(
+      `${selector}[data-item-id="${firstMatch.id}"]`,
+    );
+    if (!hit) {
+      hit = document.querySelector(
+        `${selector}[data-item-id="${firstMatch.id}"]`,
+      );
+    }
+    if (!hit && isMobile && desktopRoot) {
+      const desktopRow = desktopRoot.querySelector(
+        `tr[data-item-id="${firstMatch.id}"]`,
+      );
+      if (desktopRow) {
+        const setName = desktopRow.querySelector(".item-name");
+        if (setName) {
+          const rowName = normalizeSearchText(setName.textContent);
+          const target = mobileRoot?.querySelector(
+            `.mcard[data-item-name*="${rowName}"]`,
+          );
+          if (target) hit = target;
+        }
+      }
+    }
+  }
+
+  if (!hit) {
+    const nameSelector = isMobile
+      ? ".mcard[data-item-name]"
+      : "tr[data-item-name]";
+    let items = Array.from(root.querySelectorAll(nameSelector));
+    if (!items.length) {
+      items = Array.from(document.querySelectorAll(nameSelector));
+    }
+    for (const el of items) {
+      const name = normalizeSearchText(el.getAttribute("data-item-name"));
+      if (name.includes(q)) {
+        hit = el;
+        break;
+      }
+    }
+  }
+
+  if (hit) {
+    const block = hit.closest(".category-block") || root;
+    const tableWrap = hit.closest(".table-wrap");
+
+    block.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    setTimeout(() => {
+      if (tableWrap && tableWrap.scrollHeight > tableWrap.clientHeight + 4) {
+        const rowRect = hit.getBoundingClientRect();
+        const wrapRect = tableWrap.getBoundingClientRect();
+        const delta = rowRect.top - wrapRect.top - 40;
+        tableWrap.scrollTop = Math.max(0, tableWrap.scrollTop + delta);
+      }
+
+      hit.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      hit.classList.add("search-hit");
+      setTimeout(() => hit.classList.remove("search-hit"), 1400);
+    }, 180);
+    return;
+  }
+
+  if (attempt < 6) {
+    setTimeout(() => scrollToListOnSearch(query, attempt + 1), 120);
+    return;
+  }
+
+  if (isMobile) {
+    const fallbackCard = root.querySelector(".mcard");
+    if (fallbackCard) {
+      fallbackCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+  }
+
+  root.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 async function saveMobileInlineEdit({ id, field, rawValue, item }) {
   const raw = String(rawValue ?? "").trim() || "0";
 
@@ -428,12 +534,12 @@ function renderApp() {
         <div>
           ${renderItemListControls(state, state.items)}
           <div id="desktopList">
-            ${renderItemTable(filtered, state.sortKey)}
+            ${renderItemTable(filtered, state.sortKey, state.searchText)}
           </div>
           <div id="mobileLists">
-            ${renderItemMobileList(filtered, state.sortKey)}
+            ${renderItemMobileList(filtered, state.sortKey, state.searchText)}
           </div>
-        </div>
+      </div>
       </div>
 
       ${renderAnalytics()}
@@ -504,6 +610,9 @@ function bindPerRenderInputs() {
       state.searchText = s.value;
       rerenderTableOnly();
       rerenderListOnly();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollToListOnSearch(state.searchText));
+      });
     });
   }
 

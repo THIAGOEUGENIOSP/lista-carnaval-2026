@@ -421,6 +421,10 @@ tr.row-summary td{
   font-weight: 700;
 }
 
+tr.search-hit{
+  box-shadow: 0 0 0 2px var(--cat-accent), 0 8px 18px rgba(0,0,0,.15);
+}
+
 .qty-sub{
   display: block;
   font-size: 12px;
@@ -741,6 +745,10 @@ tr.row-bought .badge{
  .mcard.row-bought .mname,
  .mcard.row-bought .mtotal .value{
    text-decoration: line-through;
+ }
+
+ .mcard.search-hit{
+   box-shadow: 0 0 0 2px var(--cat-accent), 0 8px 18px rgba(0,0,0,.15);
  }
 }
 
